@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2Reply — rehearse your lines</title>
+  <meta name="description" content="An Android rehearsal partner for theatrical plays. Import a fully-voiced recording plus its timed script; your characters' lines go silent for you to speak while the rest of the cast answers on cue." />
+  <link rel="icon" type="image/webp" href="assets/favicon.webp" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <meta property="og:title" content="2Reply — rehearse your lines" />
+  <meta property="og:description" content="The Android app that plays every part but yours. Synced chat-style script, per-line timing gauges, memorization drills — 100% on-device." />
+  <meta property="og:type" content="website" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <a class="nav-brand" href="index.html">
+        <img src="assets/icon.webp" alt="2Reply icon" />
+        <span>2Reply</span>
+      </a>
+      <div class="nav-links">
+        <a href="#whatsnew">What's new</a>
+        <a href="#features" class="hide-sm">Features</a>
+        <a href="#modes" class="hide-sm">Rehearsal&nbsp;modes</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="https://github.com/vibetuned/to-reply">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <img class="hero-icon" src="assets/icon.webp" alt="2Reply app icon" />
+      <p class="eyebrow">2Reply</p>
+      <h1>The scene partner that plays every part but yours.</h1>
+      <p class="tagline">
+        An Android rehearsal app for theatrical plays. Import a fully-voiced
+        <strong>.m4b</strong> recording and its timed script — pick your characters, and
+        their lines go <strong>silent for you to speak</strong> while the rest of the cast
+        answers, right on cue.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/vibetuned/to-reply">Build it from source</a>
+        <a class="btn btn-ghost" href="#build">How to build →</a>
+      </div>
+      <div class="badge-row">
+        <span class="badge">v1.0</span>
+        <span class="badge">Play Store — coming soon</span>
+        <span class="badge">Android 13+</span>
+        <span class="badge">Kotlin · Jetpack Compose</span>
+        <span class="badge">100% on-device · no internet permission</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- What's new -->
+  <section id="whatsnew" class="alt">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="ver-pill">v1.0 · 25 Jul 2026</span>
+        <h2>What's new</h2>
+        <p>The first release — everything below is new.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <span class="ico">💬</span>
+          <h3>Your script as a conversation</h3>
+          <p>The play renders like a chat: other characters on the left, <strong>your lines as "me" bubbles</strong> on the right, stage directions as system notes, scene titles as headers. The active line highlights and scrolls along with the audio.</p>
+        </div>
+        <div class="card">
+          <span class="ico">🔇</span>
+          <h3>Rehearsal mute</h3>
+          <p>Playback volume drops to zero <strong>exactly during your characters' lines</strong> and comes back after — the play stays on schedule while you deliver the line. Works from the lock screen with the app in the background.</p>
+        </div>
+        <div class="card">
+          <span class="ico">🎭</span>
+          <h3>One role or several</h3>
+          <p>Pick any number of characters from the cast list (sorted by line count). All of their lines mute and flip to your side of the chat — rehearse two parts, or practice as a duo on one device.</p>
+        </div>
+        <div class="card">
+          <span class="ico">🙈</span>
+          <h3>Text-hiding drills</h3>
+          <p>Two toggles: hide <strong>your</strong> lines to test memorization, or hide <strong>everyone else's</strong> to train reacting to the spoken cue. Hidden bubbles keep the name and a duration-scaled gauge, like a voice message.</p>
+        </div>
+        <div class="card">
+          <span class="ico">⏱️</span>
+          <h3>Per-line timing gauges</h3>
+          <p>Every line carries a small progress bar with its spoken duration — full for what's played, filling live on the current line. During your muted lines it doubles as a <strong>pacing guide</strong>.</p>
+        </div>
+        <div class="card">
+          <span class="ico">⏭️</span>
+          <h3>Scene-by-scene transport</h3>
+          <p>Previous / next <strong>scene</strong> buttons in the app and on the media notification — the meaningful jump unit when rehearsing, not an arbitrary ±30 seconds. Tap any bubble to jump straight to that line.</p>
+        </div>
+      </div>
+      <p class="changelog-foot">
+        See the <a href="https://github.com/vibetuned/to-reply/blob/main/CHANGELOG.md">full changelog</a> for every detail.
+      </p>
+    </div>
+  </section>
+
+  <!-- Rehearsal modes -->
+  <section id="modes">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Rehearsal modes</h2>
+        <p>
+          Two independent toggles on the training screen change what you're practicing.
+          Hidden lines keep the speaker's name and their timing gauge — you always know
+          who speaks and for how long.
+        </p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Your lines</th><th>Others' lines</th><th>You're practicing</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>text shown</td><td>text shown</td>
+              <td><strong>Reading along</strong> — the default. Follow the script, speak on cue over your muted lines.</td>
+            </tr>
+            <tr>
+              <td>text shown</td><td>hidden</td>
+              <td><strong>Ear training</strong> — no reading ahead; catch your cue from the spoken audio alone.</td>
+            </tr>
+            <tr>
+              <td>hidden</td><td>text shown</td>
+              <td><strong>Memorization</strong> — can you recall the line with only its name tag and timing bar?</td>
+            </tr>
+            <tr>
+              <td>hidden</td><td>hidden</td>
+              <td><strong>Off-book run</strong> — a pure audio-and-timing pass, the closest thing to being on stage.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="color:var(--text-dim);margin-top:18px;">
+        The mute engine ticks against the script's timing windows with deadline-aware
+        precision — mute edges land inside the recording's natural inter-line pauses. Your
+        device volume is never touched; only the player's own gain.
+      </p>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="alt">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>What 2Reply does</h2>
+        <p>A focused, offline rehearsal player — no accounts, no network, no tracking.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <span class="ico">📥</span>
+          <h3>Import</h3>
+          <ul>
+            <li>A play = a fully-voiced <strong>.m4b</strong> recording + a timed <strong>play.json</strong> script.</li>
+            <li>Two-step picker from any SAF source; both files are <strong>copied into private storage</strong>.</li>
+            <li>The script is validated first, and a duration cross-check catches mismatched pairs.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="ico">📚</span>
+          <h3>Library</h3>
+          <ul>
+            <li>Cover art (from the m4b), duration, and listening progress per play.</li>
+            <li>Shows which roles you're rehearsing; delete with confirmation.</li>
+            <li>Reopens your last play — paused, where you left it — on launch.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="ico">🗨️</span>
+          <h3>Training screen</h3>
+          <ul>
+            <li>Chat-style script with speaker names, acting directions, staging notes, and scene headers.</li>
+            <li>Auto-follow keeps the active line in view; grab the list to pause it, tap the target button to snap back.</li>
+            <li>Tap any bubble to seek there. A <strong>"Your line — speak now"</strong> banner shows while muted.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="ico">▶️</span>
+          <h3>Player</h3>
+          <ul>
+            <li>Foreground media session — background playback, lock-screen controls.</li>
+            <li>Mini-player on every screen: play/pause and previous / next <strong>scene</strong>.</li>
+            <li>Position auto-saves every 5 s and on pause; roles and drill settings are remembered.</li>
+            <li>The screen stays awake while playing — hands-free through a whole scene.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Play format -->
+  <section id="format">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>The play format</h2>
+        <p>2Reply plays a pair of files produced by the LN toolchain (or anything that writes the same shape):</p>
+      </div>
+      <div class="split">
+        <div class="card">
+          <h3>recording.m4b <span class="tag consume">audio</span></h3>
+          <p>
+            A fully-voiced recording of the play — every character spoken, one chapter per
+            scene. Title and cover art are read from the file's metadata; the embedded
+            cover becomes the library artwork.
+          </p>
+        </div>
+        <div class="card">
+          <h3>play.json <span class="tag create">timing</span></h3>
+          <p>
+            The script with timestamps: scenes, and per entry a start/end in seconds, a
+            type (<code>dialogue</code>, <code>staging</code>, <code>cue</code>), the
+            speaker, the text, an acting direction, and an emotion tag. The script's
+            timings are the source of truth for muting, highlighting, and scene skips —
+            they must match the recording (import rejects pairs that differ by more
+            than 30&nbsp;seconds of total duration).
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Requirements & limits -->
+  <section class="alt">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Requirements &amp; Limitations</h2>
+        <p>2Reply is single-device, offline software. Here's exactly what that means.</p>
+      </div>
+      <div class="grid" style="margin-bottom:40px;">
+        <div class="card">
+          <span class="ico">📱</span>
+          <h3>Requirements</h3>
+          <ul>
+            <li>Android 13 or newer (minSdk 33, targetSdk 36).</li>
+            <li>A file manager or cloud app exposing a <code>DocumentsProvider</code> for your <strong>.m4b</strong> and <strong>play.json</strong> files.</li>
+          </ul>
+        </div>
+      </div>
+      <ul class="limits">
+        <li><strong>Speaker matching is exact.</strong> "Caissière 1 (Roselyne)" and "Roselyne" count as different characters — pick each variant you want muted.</li>
+        <li><strong>Muting is player gain</strong>, engaged with ~0.1 s precision at line edges — normally invisible because it lands inside the recording's inter-line pauses. Device volume is never touched.</li>
+        <li><strong>Re-importing the same play creates a duplicate</strong> (UUID-keyed library, no content hashing).</li>
+        <li><strong>Both files are copied</strong> into app storage at import — a 90-minute play costs roughly the m4b's size. No streaming, no network.</li>
+        <li><strong>The script is required.</strong> If the play.json can't be read, the play is listen-only: no chat, no muting, no scene skips.</li>
+        <li>Timings come from the script verbatim — a mismatched pair is rejected at import, but small drift within the 30 s guard isn't corrected.</li>
+        <li>Unknown entry types render as staging notes; zero-length staging/cue entries flash by without breaking the flow.</li>
+        <li><strong>Single-device only.</strong> Uninstalling drops your library, positions, and chosen roles.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Build -->
+  <section id="build">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Build it yourself</h2>
+        <p>Until the Play Store release, source is the way in. One command:</p>
+      </div>
+      <div class="build-grid">
+        <div>
+          <p style="color:var(--text-dim);">JDK 21 required. From the project root:</p>
+          <div class="code">$ ./gradlew assembleDebug</div>
+          <p style="color:var(--text-dim);margin-top:16px;">
+            The debug APK lands in <code>app/build/outputs/apk/debug/</code>.
+            Install it with <code>adb install</code>.
+          </p>
+        </div>
+        <div>
+          <p style="color:var(--text-dim);">
+            2Reply shares its architecture and house style with
+            <a href="https://ln.vibetuned.com">ln-reader</a> — same stack, same patterns,
+            documented in the repo's <code>NEW_APP_SPEC.md</code>.
+          </p>
+          <a class="btn btn-ghost" href="https://github.com/vibetuned/to-reply">Browse the source →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 vibetuned · 2Reply</span>
+      <div class="foot-links">
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="https://github.com/vibetuned/to-reply">GitHub</a>
+        <a href="https://github.com/vibetuned/to-reply/blob/main/LICENSE">License</a>
+        <a href="https://ln.vibetuned.com">ln-reader</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

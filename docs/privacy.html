@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy Policy — 2Reply</title>
+  <meta name="description" content="Privacy policy for the 2Reply Android rehearsal app. 2Reply collects no personal data, has no internet permission, and runs entirely on your device." />
+  <link rel="icon" type="image/webp" href="assets/favicon.webp" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <a class="nav-brand" href="index.html">
+        <img src="assets/icon.webp" alt="2Reply icon" />
+        <span>2Reply</span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html#features">Features</a>
+        <a href="index.html#build" class="hide-sm">Build</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="https://github.com/vibetuned/to-reply">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="doc">
+    <div class="wrap">
+      <h1>Privacy Policy</h1>
+      <p class="updated">Last updated: 25 July 2026 · Applies to the <strong>2Reply</strong> Android app (<code>com.vibetuned.to_reply</code>)</p>
+
+      <div class="callout">
+        <p>
+          <strong>Short version:</strong> 2Reply collects nothing about you. There are no
+          accounts, no analytics, no ads, and no tracking — and the app doesn't even hold the
+          Android <em>internet</em> permission, so it is technically incapable of sending
+          anything anywhere. Everything you import and every position you save stays on your
+          device.
+        </p>
+      </div>
+
+      <h2>1. Who we are</h2>
+      <p>
+        2Reply ("the app") is developed by <strong>vibetuned</strong> ("we", "us"). It is an
+        offline Android rehearsal player for theatrical plays — a fully-voiced
+        <code>.m4b</code> recording plus a timed <code>play.json</code> script. This policy
+        explains what the app does and does not do with your information.
+      </p>
+
+      <h2>2. Data we collect</h2>
+      <p>
+        <strong>None.</strong> The app does not collect, transmit, sell, or share any personal
+        data. We operate no servers and have no accounts, sign-in, or user profiles. We cannot
+        see your plays, your rehearsal activity, or anything else about how you use the app.
+        Unlike most apps, 2Reply's manifest declares <strong>no internet permission</strong>:
+        the operating system itself prevents it from making network connections.
+      </p>
+
+      <h2>3. Data the app stores on your device</h2>
+      <p>
+        To work as a rehearsal player, the app stores the following <strong>locally on your
+        device only</strong>, inside its own private storage:
+      </p>
+      <ul>
+        <li><strong>Imported plays</strong> — copies of the <code>.m4b</code> recording and <code>play.json</code> script you add, plus extracted metadata such as the title and cover art.</li>
+        <li><strong>Rehearsal state</strong> — your playback position per play and the characters you chose to rehearse, kept in the app's local database.</li>
+        <li><strong>Settings</strong> — preferences such as the text-hiding drill toggles.</li>
+      </ul>
+      <p>
+        This data never leaves your device. Uninstalling the app removes it (see Android Auto
+        Backup below).
+      </p>
+
+      <h2>4. Permissions and why we use them</h2>
+      <ul>
+        <li><strong>Foreground service / media playback</strong> — lets playback continue in the background with controls in the system media notification and lock screen.</li>
+        <li><strong>Post notifications</strong> — shows the media-playback notification.</li>
+        <li><strong>Wake lock</strong> — keeps the device awake enough to continue playing audio while the screen is off (and keeps the screen on while a play is playing).</li>
+      </ul>
+      <p>
+        That is the complete list. In particular, the app requests <strong>no internet, no
+        location, no camera, no microphone, and no contacts</strong> access. Rehearsal muting
+        works by silencing playback — the app never records you.
+      </p>
+
+      <h2>5. File access</h2>
+      <p>
+        The app uses Android's Storage Access Framework (SAF). You pick the two files to
+        import; the app only accesses what you explicitly select, copies them into its own
+        private storage, and never touches the originals again. It does not scan your device
+        storage or browse files on its own, and it keeps no ongoing permission to the files
+        you picked.
+      </p>
+
+      <h2>6. Third parties</h2>
+      <p>
+        The app contains <strong>no advertising, analytics, crash-reporting, or tracking
+        SDKs</strong>. If you import a file stored with a cloud provider (such as Google Drive),
+        that transfer is handled by Android and the provider you chose, under their own privacy
+        policies. We are not involved in and do not receive anything from that transfer.
+      </p>
+
+      <h2>7. Android Auto Backup</h2>
+      <p>
+        The app allows Android's standard Auto Backup. If you have device backup enabled, Android
+        may back up the app's data to <em>your own</em> Google account. This is a function of
+        your device and Google account, governed by Google's privacy policy — not something we
+        operate or can access.
+      </p>
+
+      <h2>8. Children's privacy</h2>
+      <p>
+        The app is a general-purpose rehearsal tool and is not directed at children. Because it
+        collects no personal data from anyone, it collects none from children.
+      </p>
+
+      <h2>9. Changes to this policy</h2>
+      <p>
+        If the app's behavior changes in a way that affects this policy, we will update this page
+        and revise the "Last updated" date above.
+      </p>
+
+      <h2>10. Contact</h2>
+      <p>
+        Questions about this policy? Email
+        <a href="mailto:dev@vibetuned.com">dev@vibetuned.com</a>, or open an issue on
+        <a href="https://github.com/vibetuned/to-reply/issues">GitHub</a>.
+      </p>
+
+      <p style="margin-top:40px;"><a href="index.html">← Back to 2Reply</a></p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 vibetuned · 2Reply</span>
+      <div class="foot-links">
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="https://github.com/vibetuned/to-reply">GitHub</a>
+        <a href="https://github.com/vibetuned/to-reply/blob/main/LICENSE">License</a>
+        <a href="https://ln.vibetuned.com">ln-reader</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
