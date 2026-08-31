@@ -1,7 +1,7 @@
 [versions]
-agp = "9.2.1"
-kotlin = "2.1.20"
-ksp = "2.1.20-1.0.32"
+agp = "9.3.2"
+kotlin = "2.2.10"
+ksp = "2.3.6"
 
 coreKtx = "1.15.0"
 appcompat = "1.7.0"
