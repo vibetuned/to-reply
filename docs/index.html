@@ -4,11 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>2Reply — rehearse your lines</title>
-  <meta name="description" content="An Android rehearsal partner for theatrical plays. Import a fully-voiced recording plus its timed script; your characters' lines go silent for you to speak while the rest of the cast answers on cue." />
+  <meta name="description" content="A rehearsal partner for theatrical plays, on Android and iPhone / iPad. Import a fully-voiced recording plus its timed script; your characters' lines go silent for you to speak while the rest of the cast answers on cue." />
   <link rel="icon" type="image/webp" href="assets/favicon.webp" />
   <link rel="stylesheet" href="assets/css/style.css" />
   <meta property="og:title" content="2Reply — rehearse your lines" />
-  <meta property="og:description" content="The Android app that plays every part but yours. Synced chat-style script, per-line timing gauges, memorization drills — 100% on-device." />
+  <meta property="og:description" content="The app that plays every part but yours, on Android and iPhone / iPad. Synced chat-style script, per-line timing gauges, memorization drills — 100% on-device." />
   <meta property="og:type" content="website" />
 </head>
 <body>
@@ -19,39 +19,85 @@
         <span>2Reply</span>
       </a>
       <div class="nav-links">
-        <a href="#whatsnew">What's new</a>
+        <a href="#screenshots">Screenshots</a>
         <a href="#features" class="hide-sm">Features</a>
         <a href="#modes" class="hide-sm">Rehearsal&nbsp;modes</a>
         <a href="privacy.html">Privacy</a>
-        <a href="https://github.com/vibetuned/to-reply">GitHub</a>
+        <a href="https://play.google.com/store/apps/details?id=com.vibetuned.to_reply">Google&nbsp;Play</a>
       </div>
     </div>
   </nav>
 
   <header class="hero">
     <div class="wrap">
-      <img class="hero-icon" src="assets/icon.webp" alt="2Reply app icon" />
+      <div class="hero-icons">
+        <div class="hero-app">
+          <img class="hero-icon" src="assets/icon.webp" alt="2Reply for Android app icon" />
+          <span class="chip chip-android">Android</span>
+        </div>
+        <div class="hero-app">
+          <img class="hero-icon ios" src="assets/icon-ios.jpg" alt="2Reply for iPhone and iPad app icon" />
+          <span class="chip chip-ios">iPhone &amp; iPad</span>
+        </div>
+      </div>
       <p class="eyebrow">2Reply</p>
       <h1>The scene partner that plays every part but yours.</h1>
       <p class="tagline">
-        An Android rehearsal app for theatrical plays. Import a fully-voiced
+        A rehearsal app for theatrical plays, on Android and iPhone&nbsp;/&nbsp;iPad.
+        Import a fully-voiced
         <strong>.m4b</strong> recording and its timed script — pick your characters, and
         their lines go <strong>silent for you to speak</strong> while the rest of the cast
         answers, right on cue.
       </p>
       <div class="cta-row">
-        <a class="btn btn-primary" href="https://github.com/vibetuned/to-reply">Build it from source</a>
-        <a class="btn btn-ghost" href="#build">How to build →</a>
+        <a class="btn btn-primary btn-play" href="https://play.google.com/store/apps/details?id=com.vibetuned.to_reply">Get it on Google Play</a>
+        <a class="btn btn-ghost" href="#screenshots">See it in action →</a>
       </div>
       <div class="badge-row">
-        <span class="badge">v1.0</span>
-        <span class="badge">Play Store — coming soon</span>
-        <span class="badge">Android 13+</span>
-        <span class="badge">Kotlin · Jetpack Compose</span>
-        <span class="badge">100% on-device · no internet permission</span>
+        <span class="badge">★ Google Play · v1.0</span>
+        <span class="badge">App Store — coming soon</span>
+        <span class="badge badge-android">Native Android · Kotlin + Jetpack Compose · 13+</span>
+        <span class="badge badge-ios">Native iOS · Swift + SwiftUI · 17+</span>
+        <span class="badge">100% on-device · no network at all</span>
       </div>
     </div>
   </header>
+
+  <!-- Screenshots -->
+  <section id="screenshots">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>See it in action</h2>
+        <p>The same four moments of a rehearsal on each platform — the library, the
+          script running in sync, your line going silent, and the memorization drill.</p>
+      </div>
+
+      <div class="shots-group">
+        <div class="shots-label"><span class="chip chip-android">Android</span></div>
+        <div class="shots-row">
+          <figure class="shot"><a href="store-screenshots/phone/01-library.png"><img src="assets/shots/android/01-library.webp" alt="2Reply on Android — the library of imported plays with roles and progress" loading="lazy" /></a><figcaption>Library</figcaption></figure>
+          <figure class="shot"><a href="store-screenshots/phone/02-training-normal.png"><img src="assets/shots/android/02-training-normal.webp" alt="2Reply on Android — the script as a chat, synced to the recording" loading="lazy" /></a><figcaption>Reading along</figcaption></figure>
+          <figure class="shot"><a href="store-screenshots/phone/03-rehearsal-mute.png"><img src="assets/shots/android/03-rehearsal-mute.webp" alt="2Reply on Android — your line playing muted, with the speak-now banner" loading="lazy" /></a><figcaption>Rehearsal mute</figcaption></figure>
+          <figure class="shot"><a href="store-screenshots/phone/04-text-drill.png"><img src="assets/shots/android/04-text-drill.webp" alt="2Reply on Android — your lines collapsed to a name and a timing gauge" loading="lazy" /></a><figcaption>Memorization drill</figcaption></figure>
+        </div>
+      </div>
+
+      <div class="shots-group">
+        <div class="shots-label"><span class="chip chip-ios">iPhone &amp; iPad</span></div>
+        <div class="shots-row">
+          <figure class="shot"><a href="store-screenshots/iphone/01-library.png"><img src="assets/shots/ios/01-library.webp" alt="2Reply on iPhone — the library of imported plays with roles and progress" loading="lazy" /></a><figcaption>Library</figcaption></figure>
+          <figure class="shot"><a href="store-screenshots/iphone/02-training-normal.png"><img src="assets/shots/ios/02-training-normal.webp" alt="2Reply on iPhone — the script as a chat, synced to the recording" loading="lazy" /></a><figcaption>Reading along</figcaption></figure>
+          <figure class="shot"><a href="store-screenshots/iphone/03-rehearsal-mute.png"><img src="assets/shots/ios/03-rehearsal-mute.webp" alt="2Reply on iPhone — your line playing muted, with the speak-now banner" loading="lazy" /></a><figcaption>Rehearsal mute</figcaption></figure>
+          <figure class="shot"><a href="store-screenshots/iphone/04-text-drill.png"><img src="assets/shots/ios/04-text-drill.webp" alt="2Reply on iPhone — your lines collapsed to a name and a timing gauge" loading="lazy" /></a><figcaption>Memorization drill</figcaption></figure>
+        </div>
+      </div>
+
+      <p class="shots-foot">
+        Tap any shot for the full-resolution image. Tablet and iPad sets are in the
+        <a href="https://github.com/vibetuned/to-reply/tree/main/docs/store-screenshots">repo</a>.
+      </p>
+    </div>
+  </section>
 
   <!-- What's new -->
   <section id="whatsnew" class="alt">
@@ -235,8 +281,9 @@
           <span class="ico">📱</span>
           <h3>Requirements</h3>
           <ul>
-            <li>Android 13 or newer (minSdk 33, targetSdk 36).</li>
-            <li>A file manager or cloud app exposing a <code>DocumentsProvider</code> for your <strong>.m4b</strong> and <strong>play.json</strong> files.</li>
+            <li><strong>Android</strong> 13 or newer (minSdk 33, targetSdk 36), with a file manager or cloud app exposing a <code>DocumentsProvider</code> for your files.</li>
+            <li><strong>iPhone / iPad</strong> on iOS 17 or newer, with your files reachable from the Files app.</li>
+            <li>A fully-voiced <strong>.m4b</strong> recording of the play and its timed <strong>play.json</strong> script.</li>
           </ul>
         </div>
       </div>
@@ -258,7 +305,7 @@
     <div class="wrap">
       <div class="section-head">
         <h2>Build it yourself</h2>
-        <p>Until the Play Store release, source is the way in. One command:</p>
+        <p>2Reply is on Google Play, but it is free software — building it yourself takes one command:</p>
       </div>
       <div class="build-grid">
         <div>
