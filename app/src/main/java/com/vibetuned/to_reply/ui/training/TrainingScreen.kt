@@ -1,9 +1,14 @@
 package com.vibetuned.to_reply.ui.training
 
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +26,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -29,19 +35,17 @@ import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.RecordVoiceOver
 import androidx.compose.material.icons.outlined.SpeakerNotes
 import androidx.compose.material.icons.outlined.SpeakerNotesOff
-import androidx.compose.material.icons.outlined.TheaterComedy
 import androidx.compose.material.icons.outlined.VoiceOverOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,8 +55,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,6 +68,24 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.vibetuned.to_reply.ui.common.appContainer
+import com.vibetuned.to_reply.ui.theme.CardContainer
+import com.vibetuned.to_reply.ui.theme.CharacterBadge
+import com.vibetuned.to_reply.ui.theme.DimRose
+import com.vibetuned.to_reply.ui.theme.Glass
+import com.vibetuned.to_reply.ui.theme.Hairline
+import com.vibetuned.to_reply.ui.theme.LabelCharacter
+import com.vibetuned.to_reply.ui.theme.MyCard
+import com.vibetuned.to_reply.ui.theme.MyCardActive
+import com.vibetuned.to_reply.ui.theme.OpposingCard
+import com.vibetuned.to_reply.ui.theme.OpposingCardBorder
+import com.vibetuned.to_reply.ui.theme.OpposingName
+import com.vibetuned.to_reply.ui.theme.ProsceniumGold
+import com.vibetuned.to_reply.ui.theme.Ruby
+import com.vibetuned.to_reply.ui.theme.StageDirection
+import com.vibetuned.to_reply.ui.theme.StageTrack
+import com.vibetuned.to_reply.ui.theme.TextPrimary
+import com.vibetuned.to_reply.ui.theme.TextTimestamp
+import com.vibetuned.to_reply.ui.theme.Velvet
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -127,6 +152,7 @@ fun TrainingScreen(
                 title = {
                     Text(
                         state.play?.title.orEmpty(),
+                        style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -160,30 +186,26 @@ fun TrainingScreen(
                             else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    TextButton(onClick = { viewModel.openSpeakerSheet() }) {
-                        Icon(
-                            Icons.Outlined.TheaterComedy,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            when (state.selectedSpeakers.size) {
-                                0 -> "Choose roles"
-                                1 -> state.selectedSpeakers.first()
-                                else -> "${state.selectedSpeakers.first()} +${state.selectedSpeakers.size - 1}"
-                            },
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.widthIn(max = 140.dp)
-                        )
-                    }
+                    CharacterBadge(
+                        text = when (state.selectedSpeakers.size) {
+                            0 -> "Choose roles"
+                            1 -> state.selectedSpeakers.first()
+                            else -> "${state.selectedSpeakers.first()} +${state.selectedSpeakers.size - 1}"
+                        },
+                        onClick = { viewModel.openSpeakerSheet() },
+                        modifier = Modifier.padding(end = 8.dp).widthIn(max = 164.dp)
+                    )
                 }
             )
         },
         floatingActionButton = {
             if (!autoFollow) {
-                SmallFloatingActionButton(onClick = { autoFollow = true }) {
+                SmallFloatingActionButton(
+                    onClick = { autoFollow = true },
+                    shape = CircleShape,
+                    containerColor = Glass,
+                    contentColor = TextPrimary
+                ) {
                     Icon(Icons.Filled.MyLocation, contentDescription = "Jump to current line")
                 }
             }
@@ -191,7 +213,7 @@ fun TrainingScreen(
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             when {
-                state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center), color = Ruby)
                 state.error != null -> Text(
                     state.error.orEmpty(),
                     modifier = Modifier.align(Alignment.Center).padding(24.dp),
@@ -214,6 +236,7 @@ fun TrainingScreen(
                                     isPast = index < state.activeItemIndex,
                                     hideText = if (item.isMine) state.hideMyText
                                     else state.hideOthersText,
+                                    topGap = bubbleGap(state.items, index),
                                     positionMs = viewModel.positionMs,
                                     onClick = { viewModel.seekTo(item.startMs, index) }
                                 )
@@ -245,15 +268,36 @@ fun TrainingScreen(
 
 @Composable
 private fun SceneHeaderRow(item: ScriptItem.SceneHeader) {
-    Text(
-        item.title,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        textAlign = TextAlign.Center,
+    // Proscenium-style divider: the scene title set between two hairline rules.
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 14.dp)
-    )
+            .padding(horizontal = 24.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        HorizontalDivider(Modifier.weight(1f), color = Hairline)
+        Text(
+            item.title,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .padding(horizontal = 12.dp)
+                .widthIn(max = 260.dp)
+        )
+        HorizontalDivider(Modifier.weight(1f), color = Hairline)
+    }
+}
+
+/**
+ * Conversation-stream rhythm: consecutive lines by the same character sit 12dp apart, a
+ * speaker change gets 16dp. After a scene header or staging note (which bring their own
+ * padding) a bubble only needs a small lead.
+ */
+private fun bubbleGap(items: List<ScriptItem>, index: Int): Dp {
+    val current = items[index] as? ScriptItem.Bubble ?: return 0.dp
+    val previous = items.getOrNull(index - 1) as? ScriptItem.Bubble ?: return 8.dp
+    return if (previous.speaker == current.speaker) 12.dp else 16.dp
 }
 
 @Composable
@@ -262,33 +306,55 @@ private fun BubbleRow(
     isActive: Boolean,
     isPast: Boolean,
     hideText: Boolean,
+    topGap: Dp,
     positionMs: StateFlow<Long>,
     onClick: () -> Unit,
 ) {
     // Chat convention: my lines on the right with the "tail" corner bottom-right, everyone
     // else on the left with the tail bottom-left.
     val shape = if (item.isMine) {
-        RoundedCornerShape(16.dp, 16.dp, 4.dp, 16.dp)
+        RoundedCornerShape(12.dp, 12.dp, 4.dp, 12.dp)
     } else {
-        RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp)
+        RoundedCornerShape(12.dp, 12.dp, 12.dp, 4.dp)
     }
+    // Dialogue cards: others' lines are charcoal, mine are velvet-tinted. The line under the
+    // playhead gets a ruby border — and when it's mine, the ambient ruby "stage highlight".
     val containerColor = when {
-        isActive -> MaterialTheme.colorScheme.primaryContainer
-        item.isMine -> MaterialTheme.colorScheme.secondaryContainer
-        else -> MaterialTheme.colorScheme.surfaceVariant
+        item.isMine && isActive -> MyCardActive
+        item.isMine -> MyCard
+        isActive -> CardContainer
+        else -> OpposingCard
+    }
+    val border = when {
+        isActive -> BorderStroke(1.5.dp, Ruby)
+        item.isMine -> BorderStroke(1.dp, Velvet)
+        else -> BorderStroke(1.dp, OpposingCardBorder)
     }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 3.dp),
+            // Asymmetric gutters: others' lines keep 48dp clear on the right, mine 40dp on the
+            // left, so the two sides never line up.
+            .padding(
+                start = if (item.isMine) 40.dp else 16.dp,
+                end = if (item.isMine) 16.dp else 48.dp,
+                top = topGap
+            ),
         horizontalArrangement = if (item.isMine) Arrangement.End else Arrangement.Start
     ) {
         Surface(
             onClick = onClick,
             shape = shape,
             color = containerColor,
-            border = if (isActive) BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary) else null,
-            modifier = Modifier.widthIn(max = 320.dp)
+            contentColor = TextPrimary,
+            border = border,
+            modifier = Modifier
+                .widthIn(max = 320.dp)
+                .then(
+                    if (isActive && item.isMine) {
+                        Modifier.dropShadow(shape, Shadow(radius = 12.dp, color = Ruby, alpha = 0.2f))
+                    } else Modifier
+                )
         ) {
             Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
                 // "Me" bubbles normally skip the name (chat convention: alignment identifies
@@ -296,12 +362,12 @@ private fun BubbleRow(
                 // line this is.
                 if (!item.isMine || hideText) {
                     Text(
-                        item.speaker.ifBlank { "—" },
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (isActive) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.primary
+                        item.speaker.ifBlank { "—" }.uppercase(),
+                        style = LabelCharacter,
+                        color = if (item.isMine) MaterialTheme.colorScheme.primaryContainer
+                        else OpposingName
                     )
+                    Spacer(Modifier.height(2.dp))
                 }
                 if (!hideText) {
                     Text(item.text, style = MaterialTheme.typography.bodyMedium)
@@ -313,12 +379,7 @@ private fun BubbleRow(
                     compactWidth = if (hideText) durationBarWidth(item.durationMs) else null
                 )
                 if (!hideText && item.direction.isNotBlank()) {
-                    Text(
-                        item.direction,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontStyle = FontStyle.Italic,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Text(item.direction, style = StageDirection, color = DimRose)
                 }
             }
         }
@@ -332,7 +393,7 @@ private fun BubbleRow(
  * Only the active bubble subscribes to [positionMs] (a conditional composable read), so the
  * 300ms position ticks recompose exactly one row. The tween matches the poll interval, turning
  * the stepped updates into a continuous sweep — and it doubles as a pleasant fill/drain
- * animation when a seek or line change snaps the fraction.
+ * animation when a seek or line change snaps the fraction. Only the live line glows.
  */
 @Composable
 private fun LineProgressBar(
@@ -356,18 +417,16 @@ private fun LineProgressBar(
             .padding(top = 6.dp, bottom = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        LinearProgressIndicator(
+        StageTrack(
             progress = { animated },
-            modifier = Modifier.weight(1f).height(3.dp),
-            color = MaterialTheme.colorScheme.primary,
-            trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
-            strokeCap = StrokeCap.Round
+            modifier = Modifier.weight(1f),
+            glow = isActive
         )
         Spacer(Modifier.width(8.dp))
         Text(
             formatLineDuration(item.durationMs),
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = TextTimestamp
         )
     }
 }
@@ -397,17 +456,17 @@ private fun StagingNoteRow(
             .padding(horizontal = 32.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.Center
     ) {
+        // Stage directions and timing cues are the one place the proscenium gold appears.
         Surface(
             onClick = onClick,
             shape = MaterialTheme.shapes.small,
-            color = if (isActive) MaterialTheme.colorScheme.primaryContainer
-            else androidx.compose.ui.graphics.Color.Transparent
+            color = if (isActive) ProsceniumGold.copy(alpha = 0.12f) else Color.Transparent,
+            border = if (isActive) BorderStroke(1.dp, ProsceniumGold.copy(alpha = 0.4f)) else null
         ) {
             Text(
                 if (item.isCue) "◈ ${item.text}" else item.text,
-                style = MaterialTheme.typography.bodySmall,
-                fontStyle = FontStyle.Italic,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = StageDirection,
+                color = ProsceniumGold,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
             )
@@ -415,31 +474,45 @@ private fun StagingNoteRow(
     }
 }
 
-/** Shown while the playhead is inside the trained character's (muted) line. */
+/**
+ * Shown while the playhead is inside the trained character's (muted) line: the floating
+ * rehearsal prompt — a ruby-to-velvet pill under a pulsing crimson aura that signals the
+ * mic-is-yours moment.
+ */
 @Composable
 private fun SpeakNowBanner(modifier: Modifier = Modifier) {
-    Surface(
-        modifier = modifier.padding(bottom = 12.dp),
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.primary,
-        tonalElevation = 4.dp
+    val aura = rememberInfiniteTransition(label = "speakNowAura").animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.6f,
+        animationSpec = infiniteRepeatable(tween(durationMillis = 900), RepeatMode.Reverse),
+        label = "auraAlpha"
+    )
+    Row(
+        modifier = modifier
+            .padding(bottom = 12.dp)
+            // Block form: the pulse is read in the draw phase, so it never recomposes.
+            .dropShadow(CircleShape) {
+                radius = 24.dp.toPx()
+                offset = Offset(0f, 8.dp.toPx())
+                color = Ruby
+                alpha = aura.value
+            }
+            .background(Brush.horizontalGradient(listOf(Ruby, Velvet)), CircleShape)
+            .padding(horizontal = 20.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                Icons.Outlined.Mic,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                "Your line — speak now",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-        }
+        Icon(
+            Icons.Outlined.Mic,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+            tint = Color.White
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(
+            "Your line — speak now",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
+        )
     }
 }

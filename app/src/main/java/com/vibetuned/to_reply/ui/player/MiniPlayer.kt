@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -17,10 +16,10 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -30,7 +29,8 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -39,6 +39,9 @@ import androidx.media3.session.MediaController
 import coil3.compose.AsyncImage
 import com.vibetuned.to_reply.player.SceneSkip
 import com.vibetuned.to_reply.ui.common.appContainer
+import com.vibetuned.to_reply.ui.theme.Glass
+import com.vibetuned.to_reply.ui.theme.Ruby
+import com.vibetuned.to_reply.ui.theme.StageTrack
 import kotlinx.coroutines.delay
 
 /** Lightweight snapshot of the active playback session, read straight off the [MediaController]. */
@@ -74,13 +77,17 @@ fun MiniPlayerBar(
         value = container.playRepository.sceneStartsMs(nowPlaying.playId)
     }
 
-    Surface(modifier = modifier.fillMaxWidth(), tonalElevation = 3.dp) {
+    // Floating-controls glass (the design system's level 3); the ruby progress strip doubles as
+    // its lit top edge.
+    Surface(modifier = modifier.fillMaxWidth(), color = Glass) {
         Column {
             val fraction = if (nowPlaying.durationMs > 0)
                 (nowPlaying.positionMs.toFloat() / nowPlaying.durationMs).coerceIn(0f, 1f) else 0f
-            LinearProgressIndicator(
+            StageTrack(
                 progress = { fraction },
-                modifier = Modifier.fillMaxWidth().height(2.dp)
+                modifier = Modifier.fillMaxWidth(),
+                thickness = 2.dp,
+                cap = StrokeCap.Butt
             )
             Row(
                 modifier = Modifier
@@ -101,7 +108,6 @@ fun MiniPlayerBar(
                     Text(
                         nowPlaying.title,
                         style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -125,10 +131,16 @@ fun MiniPlayerBar(
                         CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
                             strokeWidth = 2.dp,
-                            color = LocalContentColor.current
+                            color = Ruby
                         )
                     } else {
-                        IconButton(onClick = { if (c.isPlaying) c.pause() else c.play() }) {
+                        FilledIconButton(
+                            onClick = { if (c.isPlaying) c.pause() else c.play() },
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = Ruby,
+                                contentColor = Color.White
+                            )
+                        ) {
                             Icon(
                                 imageVector = if (nowPlaying.isPlaying) Icons.Filled.Pause
                                 else Icons.Filled.PlayArrow,

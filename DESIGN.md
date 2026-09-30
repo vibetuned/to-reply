@@ -41,7 +41,8 @@ com.vibetuned.to_reply
     ├── home/                      HomeScreen + HomeViewModel (list, two-step import, delete)
     ├── navigation/                TopLevelDestination, ToReplyNavGraph, TrainingRoute
     ├── player/                    MiniPlayerBar (the app's only transport UI)
-    ├── theme/                     Color / Theme / Type (Material 3 dynamic color)
+    ├── theme/                     Color / Theme / Type / Shape + Components (StageTrack,
+    │                               CharacterBadge) — the fixed dark design system
     └── training/                  TrainingScreen + TrainingViewModel + SpeakerPickerSheet
                                     + TrainingUiState (the chat, drills, gauges)
 ```
@@ -290,6 +291,59 @@ destination a bottom nav would be one useless tab. The root Scaffold's bottom ba
 `MiniPlayerBar` alone; the `TopLevelDestination` enum stays so a second tab is a one-line
 addition. The mini-player is *not* hidden on the training screen (ln-reader hides it on its
 full player) because it is that screen's transport.
+
+## Visual design
+
+The "Theatrical Proscenium" design system (source spec: `images/DESIGN.md`, with the icon
+artwork beside it): a darkened auditorium — stage-pit canvas, ruby and velvet highlights,
+proscenium gold for stage directions. The iOS app implements the same system
+(`ToReply/UI/Theme/StageTheme.swift`).
+
+- **Dark only, no dynamic color.** A deliberate deviation from NEW_APP_SPEC's Material You
+  theme: wallpaper colors would replace the brand. The system bars are forced to
+  `SystemBarStyle.dark` — the default `auto` style follows the *system* theme and would draw
+  dark icons on the dark canvas whenever the phone is in light mode.
+- **Where the spec's two halves disagree, the prose wins.** Its token table is a Material 3
+  dark scheme derived from four seeds (ruby `#E53935`, velvet `#B82638`, gold `#D4AF37`,
+  stage pit `#0A0A0E`); its prose spells out concrete values for the same things. So the
+  surface ladder (`#0A0A0E` → `#141418` → `#1E1E24`, hairlines `#2B2B36`) and the text levels
+  (`#F8F8FA` / `#9E9EA8`) replace the table's surface roles; the accent roles come from the
+  table verbatim.
+- **Ruby is never small text.** Ruby on the canvas is 3.85:1, under WCAG AA for body copy.
+  Text and icon accents use the table's tone-80 `primary` (`#FFB4AC`); ruby and velvet go on
+  fills and strokes — gauges, active borders, the FAB, checkboxes, the speak-now pill.
+- **Gold is reserved** for staging notes and cues. In-bubble voice directions use the spec's
+  other stage-direction color, dim rose, so they don't compete with them.
+- **Type**: Plus Jakarta Sans (headlines, character labels) and Inter (body, UI), bundled in
+  `res/font` (OFL; license texts in `assets/licenses`). Not downloadable fonts: the app has no
+  network access and must not depend on Play services. `Type.kt` maps the spec's scale onto the
+  M3 roles (`title*` = headline-lg/md/sm, `body*` = body-lg/md/sm); the two styles M3 has no
+  role for, `LabelCharacter` (uppercase, 0.08em) and `StageDirection` (Inter italic), are
+  top-level vals.
+- **Components** (`ui/theme/Components.kt`): `StageTrack`, the progress rail used everywhere
+  (hairline track, ruby fill, 4dp `BlurMaskFilter` glow — only the live line glows, or a played
+  scene becomes a wall of lit bars); `CharacterBadge`, the glass masks-plus-persona pill for
+  roles on Home and the training screen's role chip. Glows use Compose 1.9's
+  `Modifier.dropShadow` (CSS-like, no elevation light source); the speak-now aura pulses through
+  its block form, so the animation never leaves the draw phase.
+- **Conversation layout**: 12dp between consecutive lines of the same character, 16dp on a
+  speaker change; asymmetric gutters (others' lines 16/48dp, mine 40/16dp). Bubbles keep the
+  chat tail (12dp corners, 4dp tail).
+
+### Launcher icon
+
+Cropped from `images/2reply_theatrical_app_icon_complete.jpeg` (the full 2048px artwork),
+framed like `images/2reply_theatrical_app_icon.png` (the render): the render is the artwork at
+half scale, and its icon square spans artwork pixels 260–1788.
+
+- **Adaptive icon**: that square is the 72dp viewport. The 108dp layer reaches 18dp further on
+  every side, past the artwork's edge — filled by mirroring the curtains, only ever visible
+  during launcher motion. Both masks sit inside the 66dp safe zone, so no mask shape clips them.
+- Foreground = the art (opaque, so the stage-pit `ic_launcher_background` never shows);
+  monochrome = the two masks as a solid silhouette with the eyes, mouths and tear cut out,
+  extracted from the art's glowing outlines (themed icons, Android 13+).
+- Legacy mipmaps (unused at minSdk 33, kept current) and the 512px Play Store icon use the
+  render's framing directly.
 
 ## AGP 9 quirks worth remembering
 

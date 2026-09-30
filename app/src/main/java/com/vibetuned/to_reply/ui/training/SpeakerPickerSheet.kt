@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.RecordVoiceOver
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -22,9 +23,11 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.vibetuned.to_reply.data.model.SpeakerStat
+import com.vibetuned.to_reply.ui.theme.Ruby
 
 /**
  * Character picker: every speaker with at least one attributed dialogue line, busiest first.
@@ -79,7 +82,7 @@ fun SpeakerPickerSheet(
                     Icon(
                         Icons.Outlined.RecordVoiceOver,
                         contentDescription = null,
-                        tint = if (isSelected) MaterialTheme.colorScheme.primary
+                        tint = if (isSelected) Ruby
                         else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.width(14.dp))
@@ -100,7 +103,11 @@ fun SpeakerPickerSheet(
                     // Visual only — the whole row is the toggle target, which keeps a single
                     // event path (a checkbox with its own onCheckedChange would double-fire).
                     Checkbox(checked = isSelected, onCheckedChange = null,
-                        modifier = Modifier.padding(start = 8.dp))
+                        modifier = Modifier.padding(start = 8.dp),
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = Ruby,
+                            checkmarkColor = Color.White
+                        ))
                 }
             }
         }

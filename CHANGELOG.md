@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Visual design
+- **"Theatrical Proscenium" look** — stage-pit canvas, ruby and velvet dialogue cards,
+  proscenium-gold stage directions, Plus Jakarta Sans + Inter, glowing progress tracks and a
+  pulsing "speak now" prompt. Dark only; no longer follows wallpaper colors.
+- **New app icon** — comedy/tragedy masks under a spotlight, with a themed (monochrome)
+  variant for Android 13+.
+
 ## v1.0 — 2026-07-24
 
 First release: rehearse a theatrical play against its fully-voiced recording — your character's

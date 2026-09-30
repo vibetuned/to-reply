@@ -16,15 +16,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.RecordVoiceOver
 import androidx.compose.material.icons.outlined.TheaterComedy
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -45,9 +46,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -55,6 +59,13 @@ import coil3.compose.AsyncImage
 import com.vibetuned.to_reply.data.model.Play
 import com.vibetuned.to_reply.data.repo.PlayRepository
 import com.vibetuned.to_reply.ui.common.appContainer
+import com.vibetuned.to_reply.ui.theme.CardContainer
+import com.vibetuned.to_reply.ui.theme.CharacterBadge
+import com.vibetuned.to_reply.ui.theme.Hairline
+import com.vibetuned.to_reply.ui.theme.Ruby
+import com.vibetuned.to_reply.ui.theme.RowDivider
+import com.vibetuned.to_reply.ui.theme.StageTrack
+import com.vibetuned.to_reply.ui.theme.SurfaceElevated
 import java.io.File
 
 /**
@@ -114,7 +125,16 @@ fun HomeScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             if (!state.isImporting) {
-                FloatingActionButton(onClick = { audioPicker.launch(AUDIO_MIME_TYPES) }) {
+                FloatingActionButton(
+                    onClick = { audioPicker.launch(AUDIO_MIME_TYPES) },
+                    shape = CircleShape,
+                    containerColor = Ruby,
+                    contentColor = Color.White,
+                    modifier = Modifier.dropShadow(
+                        CircleShape,
+                        Shadow(radius = 16.dp, color = Ruby, offset = DpOffset(0.dp, 6.dp), alpha = 0.35f)
+                    )
+                ) {
                     Icon(Icons.Filled.Add, contentDescription = "Import a play")
                 }
             }
@@ -126,7 +146,7 @@ fun HomeScreen(
             }
             when {
                 state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = Ruby)
                 }
                 state.plays.isEmpty() -> EmptyState()
                 else -> LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -166,83 +186,70 @@ private fun PlayRowItem(
     onClick: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 10.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (row.play.hasCover) {
-                AsyncImage(
-                    model = File(row.play.coverPath!!),
-                    contentDescription = null,
-                    modifier = Modifier.size(56.dp).clip(MaterialTheme.shapes.small)
-                )
-            } else {
-                Surface(
-                    modifier = Modifier.size(56.dp),
-                    shape = MaterialTheme.shapes.small,
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            Icons.Outlined.TheaterComedy,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-            Spacer(Modifier.width(14.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    row.play.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        formatDuration(row.play.durationMs),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+    // Script-index row: playbill thumb, title, duration + rehearsed roles, and a completion
+    // track along the base; rows are separated by a subtle bottom rule.
+    Column(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (row.play.hasCover) {
+                    AsyncImage(
+                        model = File(row.play.coverPath!!),
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp).clip(MaterialTheme.shapes.small)
                     )
-                    if (row.play.selectedSpeakers.isNotEmpty()) {
-                        Spacer(Modifier.width(8.dp))
-                        Icon(
-                            Icons.Outlined.RecordVoiceOver,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(Modifier.width(3.dp))
-                        Text(
-                            row.play.selectedSpeakers.joinToString(", "),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                } else {
+                    Surface(
+                        modifier = Modifier.size(48.dp),
+                        shape = MaterialTheme.shapes.small,
+                        color = CardContainer
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                Icons.Outlined.TheaterComedy,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
+                Spacer(Modifier.width(14.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        row.play.title,
+                        style = MaterialTheme.typography.titleSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            formatDuration(row.play.durationMs),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (row.play.selectedSpeakers.isNotEmpty()) {
+                            Spacer(Modifier.width(8.dp))
+                            CharacterBadge(
+                                row.play.selectedSpeakers.joinToString(", "),
+                                modifier = Modifier.weight(1f, fill = false)
+                            )
+                        }
+                    }
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Outlined.Delete,
+                        contentDescription = "Remove play",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
-            IconButton(onClick = onDelete) {
-                Icon(
-                    Icons.Outlined.Delete,
-                    contentDescription = "Remove play",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            if (row.progress > 0f) {
+                Spacer(Modifier.height(10.dp))
+                StageTrack(progress = { row.progress }, modifier = Modifier.fillMaxWidth())
             }
         }
-        if (row.progress > 0f) {
-            Spacer(Modifier.height(8.dp))
-            LinearProgressIndicator(
-                progress = { row.progress },
-                modifier = Modifier.fillMaxWidth().height(3.dp)
-            )
-        }
+        HorizontalDivider(color = RowDivider)
     }
 }
 
@@ -254,7 +261,7 @@ private fun EmptyState() {
                 Icons.Outlined.TheaterComedy,
                 contentDescription = null,
                 modifier = Modifier.size(56.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = Ruby
             )
             Spacer(Modifier.height(12.dp))
             Text(
@@ -278,7 +285,7 @@ private fun EmptyState() {
  */
 @Composable
 private fun ImportProgressBanner(progress: PlayRepository.ImportProgress?) {
-    Surface(tonalElevation = 2.dp) {
+    Surface(color = SurfaceElevated) {
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)) {
             val label = when (progress?.phase) {
                 PlayRepository.ImportProgress.Phase.Validating -> "Checking script…"
@@ -290,14 +297,19 @@ private fun ImportProgressBanner(progress: PlayRepository.ImportProgress?) {
                 null -> "Importing…"
             }
             Text(label, style = MaterialTheme.typography.bodySmall)
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(8.dp))
             val fraction = progress?.takeIf {
                 it.phase == PlayRepository.ImportProgress.Phase.Copying && it.totalBytes > 0
             }?.let { it.bytesRead.toFloat() / it.totalBytes }
             if (fraction != null) {
-                LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth())
+                StageTrack(progress = { fraction }, modifier = Modifier.fillMaxWidth())
             } else {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth().height(3.dp),
+                    color = Ruby,
+                    trackColor = Hairline,
+                    gapSize = 0.dp
+                )
             }
         }
     }
