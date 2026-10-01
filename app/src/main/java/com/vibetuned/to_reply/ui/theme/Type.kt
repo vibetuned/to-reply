@@ -89,6 +89,12 @@ val LabelCharacter = TextStyle(
     fontSize = 11.sp, lineHeight = 14.sp, letterSpacing = 0.08.em
 )
 
+/** A line's spoken duration beside its waveform; tabular digits keep `0:09` / `0:45` aligned. */
+val LineDuration = TextStyle(
+    fontFamily = Inter, fontWeight = FontWeight.Medium,
+    fontSize = 13.sp, lineHeight = 16.sp, fontFeatureSettings = "tnum"
+)
+
 /** Stage directions, staging notes and cues (`stage-direction`). */
 val StageDirection = TextStyle(
     fontFamily = Inter, fontWeight = FontWeight.Normal, fontStyle = FontStyle.Italic,

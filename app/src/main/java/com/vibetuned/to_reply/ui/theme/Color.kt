@@ -32,6 +32,7 @@ val OpposingCardBorder = Color(0xFF2C2C38)
 val OpposingName = Color(0xFFD47A7A)
 val MyCard = Color(0x408B1E2B)       // rgba(139, 30, 43, 0.25)
 val MyCardActive = Color(0x598B1E2B) // rgba(139, 30, 43, 0.35) — the "stage highlight"
+val WaveformIdle = Color(0xFF454A5A)   // voice-message bars not yet played
 
 // Glass (floating controls and header badges). No backdrop blur behind Compose content,
 // so these read as tinted translucency over the canvas.

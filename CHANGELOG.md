@@ -8,6 +8,13 @@
   pulsing "speak now" prompt. Dark only; no longer follows wallpaper colors.
 - **New app icon** — comedy/tragedy masks under a spotlight, with a themed (monochrome)
   variant for Android 13+.
+- **Voice-message lines** — each dialogue card shows a play button, a waveform that fills as the
+  line plays, and its duration above the text. The play button plays from that line (tapping
+  the card still just jumps there); on your own line it turns into a mic while it's your turn.
+
+### Player
+- **Scene picker** — a list button on the mini-player opens the play's scenes with their start
+  times; pick one to jump straight to it.
 
 ## v1.0 — 2026-07-24
 

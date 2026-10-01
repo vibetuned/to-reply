@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
@@ -25,7 +26,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import coil3.compose.AsyncImage
+import com.vibetuned.to_reply.data.model.PlayScene
 import com.vibetuned.to_reply.player.SceneSkip
 import com.vibetuned.to_reply.ui.common.appContainer
 import com.vibetuned.to_reply.ui.theme.Glass
@@ -59,7 +64,8 @@ data class NowPlaying(
 /**
  * Reduced playback bar driven by the process-scoped [MediaController]. Renders nothing when no
  * play is loaded, so callers can place it unconditionally. Tapping the row (outside the transport
- * buttons) opens the training screen for the current play via [onExpand].
+ * buttons) opens the training screen for the current play via [onExpand]; the scenes button opens
+ * the [ScenePickerSheet].
  */
 @Composable
 fun MiniPlayerBar(
@@ -71,11 +77,14 @@ fun MiniPlayerBar(
     val nowPlaying = rememberNowPlaying(controller) ?: return
     val c = controller ?: return
 
-    // Scene starts for the prev/next-scene buttons, reloaded only when the loaded play changes.
-    // Comes from the repository's script cache, so this is a one-time parse per play at most.
-    val sceneStarts by produceState(initialValue = emptyList<Long>(), nowPlaying.playId) {
-        value = container.playRepository.sceneStartsMs(nowPlaying.playId)
+    // The loaded play's scenes — titles for the scene picker, starts for the prev/next-scene
+    // buttons — reloaded only when the loaded play changes. Comes from the repository's script
+    // cache, so this is a one-time parse per play at most.
+    val scenes by produceState(initialValue = emptyList<PlayScene>(), nowPlaying.playId) {
+        value = container.playRepository.script(nowPlaying.playId).getOrNull()?.scenes.orEmpty()
     }
+    val sceneStarts = remember(scenes) { scenes.map { it.startMs } }
+    var showScenes by remember { mutableStateOf(false) }
 
     // Floating-controls glass (the design system's level 3); the ruby progress strip doubles as
     // its lit top edge.
@@ -121,6 +130,9 @@ fun MiniPlayerBar(
                         )
                     }
                 }
+                IconButton(onClick = { showScenes = true }) {
+                    Icon(Icons.AutoMirrored.Filled.FormatListBulleted, contentDescription = "Scenes")
+                }
                 IconButton(onClick = {
                     SceneSkip.previousTargetMs(sceneStarts, c.currentPosition)?.let { c.seekTo(it) }
                 }) {
@@ -156,6 +168,18 @@ fun MiniPlayerBar(
                 }
             }
         }
+    }
+
+    if (showScenes) {
+        ScenePickerSheet(
+            scenes = scenes,
+            currentIndex = currentSceneIndex(scenes, nowPlaying.positionMs),
+            onPick = { scene ->
+                c.seekTo(scene.startMs)
+                showScenes = false
+            },
+            onDismiss = { showScenes = false }
+        )
     }
 }
 

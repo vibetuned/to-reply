@@ -182,6 +182,12 @@ class TrainingViewModel(
         _state.update { it.copy(activeItemIndex = itemIndex) }
     }
 
+    /** A bubble's play button: jump to the line and play from there, even if paused. */
+    fun playFrom(startMs: Long, itemIndex: Int) {
+        seekTo(startMs, itemIndex)
+        playerHolder.controller.value?.play()
+    }
+
     /**
      * Flattens scenes + entries into the chat rows and records the entry->item index mapping.
      * Called again on speaker changes (flips isMine); keys stay identical so LazyColumn keeps

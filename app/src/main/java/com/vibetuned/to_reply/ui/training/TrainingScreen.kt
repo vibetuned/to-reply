@@ -9,6 +9,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,7 +31,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.RecordVoiceOver
 import androidx.compose.material.icons.outlined.SpeakerNotes
@@ -55,6 +58,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -74,6 +78,7 @@ import com.vibetuned.to_reply.ui.theme.DimRose
 import com.vibetuned.to_reply.ui.theme.Glass
 import com.vibetuned.to_reply.ui.theme.Hairline
 import com.vibetuned.to_reply.ui.theme.LabelCharacter
+import com.vibetuned.to_reply.ui.theme.LineDuration
 import com.vibetuned.to_reply.ui.theme.MyCard
 import com.vibetuned.to_reply.ui.theme.MyCardActive
 import com.vibetuned.to_reply.ui.theme.OpposingCard
@@ -82,10 +87,10 @@ import com.vibetuned.to_reply.ui.theme.OpposingName
 import com.vibetuned.to_reply.ui.theme.ProsceniumGold
 import com.vibetuned.to_reply.ui.theme.Ruby
 import com.vibetuned.to_reply.ui.theme.StageDirection
-import com.vibetuned.to_reply.ui.theme.StageTrack
 import com.vibetuned.to_reply.ui.theme.TextPrimary
 import com.vibetuned.to_reply.ui.theme.TextTimestamp
 import com.vibetuned.to_reply.ui.theme.Velvet
+import com.vibetuned.to_reply.ui.theme.VoiceWaveform
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -238,7 +243,8 @@ fun TrainingScreen(
                                     else state.hideOthersText,
                                     topGap = bubbleGap(state.items, index),
                                     positionMs = viewModel.positionMs,
-                                    onClick = { viewModel.seekTo(item.startMs, index) }
+                                    onClick = { viewModel.seekTo(item.startMs, index) },
+                                    onPlay = { viewModel.playFrom(item.startMs, index) }
                                 )
                                 is ScriptItem.StagingNote -> StagingNoteRow(
                                     item = item,
@@ -309,6 +315,7 @@ private fun BubbleRow(
     topGap: Dp,
     positionMs: StateFlow<Long>,
     onClick: () -> Unit,
+    onPlay: () -> Unit,
 ) {
     // Chat convention: my lines on the right with the "tail" corner bottom-right, everyone
     // else on the left with the tail bottom-left.
@@ -356,7 +363,8 @@ private fun BubbleRow(
                     } else Modifier
                 )
         ) {
-            Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+            // Voice-message card: the line's audio row on top, the transcript under a rule.
+            Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
                 // "Me" bubbles normally skip the name (chat convention: alignment identifies
                 // them), but with the text hidden the name is all that's left to say whose
                 // line this is.
@@ -367,19 +375,24 @@ private fun BubbleRow(
                         color = if (item.isMine) MaterialTheme.colorScheme.primaryContainer
                         else OpposingName
                     )
-                    Spacer(Modifier.height(2.dp))
+                    Spacer(Modifier.height(8.dp))
                 }
-                if (!hideText) {
-                    Text(item.text, style = MaterialTheme.typography.bodyMedium)
-                }
-                LineProgressBar(
-                    item, isActive, isPast, positionMs,
-                    // With no text to size the bubble, the gauge's width itself encodes the
+                VoiceLine(
+                    item, isActive, isPast, positionMs, onPlay,
+                    // With no text to size the bubble, the waveform's width itself encodes the
                     // line's length (voice-message convention).
-                    compactWidth = if (hideText) durationBarWidth(item.durationMs) else null
+                    waveformWidth = if (hideText) waveformWidth(item.durationMs) else null
                 )
-                if (!hideText && item.direction.isNotBlank()) {
-                    Text(item.direction, style = StageDirection, color = DimRose)
+                if (!hideText) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 10.dp, bottom = 8.dp),
+                        color = if (item.isMine) Velvet.copy(alpha = 0.5f) else Hairline
+                    )
+                    Text(item.text, style = MaterialTheme.typography.bodyMedium)
+                    if (item.direction.isNotBlank()) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(item.direction, style = StageDirection, color = DimRose)
+                    }
                 }
             }
         }
@@ -387,21 +400,22 @@ private fun BubbleRow(
 }
 
 /**
- * Voice-message-style line gauge: a thin track that is full for lines already played, empty for
- * upcoming ones, and fills in real time on the active line, with the spoken duration alongside.
+ * Voice-message row: a round play button, a waveform that is ruby for lines already played,
+ * grey for upcoming ones and fills in real time on the active line, and the spoken duration.
  *
  * Only the active bubble subscribes to [positionMs] (a conditional composable read), so the
  * 300ms position ticks recompose exactly one row. The tween matches the poll interval, turning
  * the stepped updates into a continuous sweep — and it doubles as a pleasant fill/drain
- * animation when a seek or line change snaps the fraction. Only the live line glows.
+ * animation when a seek or line change snaps the fraction.
  */
 @Composable
-private fun LineProgressBar(
+private fun VoiceLine(
     item: ScriptItem.Bubble,
     isActive: Boolean,
     isPast: Boolean,
     positionMs: StateFlow<Long>,
-    compactWidth: Dp? = null,
+    onPlay: () -> Unit,
+    waveformWidth: Dp? = null,
 ) {
     val fraction = if (isActive && item.durationMs > 0) {
         val position by positionMs.collectAsStateWithLifecycle()
@@ -413,20 +427,51 @@ private fun LineProgressBar(
         label = "lineProgress"
     )
     Row(
-        modifier = (if (compactWidth != null) Modifier.width(compactWidth) else Modifier)
-            .padding(top = 6.dp, bottom = 2.dp),
+        modifier = if (waveformWidth == null) Modifier.fillMaxWidth() else Modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        StageTrack(
+        VoiceButton(isMine = item.isMine, speaking = item.isMine && isActive, onClick = onPlay)
+        Spacer(Modifier.width(12.dp))
+        // The waveform spans the bubble between button and duration; a text-hidden bubble
+        // instead sizes it by the line's length, and the bubble shrinks around it.
+        VoiceWaveform(
+            seed = item.startMs,
             progress = { animated },
-            modifier = Modifier.weight(1f),
-            glow = isActive
+            modifier = (if (waveformWidth == null) Modifier.weight(1f) else Modifier.width(waveformWidth))
+                .height(28.dp)
         )
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(12.dp))
         Text(
             formatLineDuration(item.durationMs),
-            style = MaterialTheme.typography.labelSmall,
-            color = TextTimestamp
+            style = LineDuration,
+            color = if (item.isMine) TextPrimary else TextTimestamp
+        )
+    }
+}
+
+/**
+ * The row's play button — plays from the start of this line. Ruby on my lines, charcoal on
+ * everyone else's; on my line under the playhead it becomes a glowing mic: your turn to speak.
+ */
+@Composable
+private fun VoiceButton(isMine: Boolean, speaking: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(36.dp)
+            .then(
+                if (speaking) Modifier.dropShadow(CircleShape, Shadow(radius = 12.dp, color = Ruby, alpha = 0.5f))
+                else Modifier
+            )
+            .clip(CircleShape)
+            .background(if (isMine) Ruby else Hairline)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            if (speaking) Icons.Filled.Mic else Icons.Filled.PlayArrow,
+            contentDescription = "Play from this line",
+            modifier = Modifier.size(20.dp),
+            tint = if (isMine) Color.White else TextPrimary
         )
     }
 }
@@ -437,12 +482,12 @@ private fun formatLineDuration(ms: Long): String {
 }
 
 /**
- * Gauge width for a text-hidden bubble: linear in the line's duration, capped at 20s (longer
+ * Waveform width for a text-hidden bubble: linear in the line's duration, capped at 20s (longer
  * lines all read as "long"), so bubble width visually encodes how much speaking time the line
  * takes — the same convention chat apps use for voice messages.
  */
-private fun durationBarWidth(durationMs: Long): Dp =
-    72.dp + 200.dp * (durationMs / 20_000f).coerceIn(0f, 1f)
+private fun waveformWidth(durationMs: Long): Dp =
+    40.dp + 160.dp * (durationMs / 20_000f).coerceIn(0f, 1f)
 
 @Composable
 private fun StagingNoteRow(

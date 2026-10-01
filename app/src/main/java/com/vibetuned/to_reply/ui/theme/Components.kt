@@ -23,7 +23,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
@@ -69,6 +72,58 @@ fun StageTrack(
         }
         drawLine(Ruby, Offset(inset, y), Offset(end, y), stroke, cap)
     }
+}
+
+/**
+ * Voice-message waveform: rounded 3dp bars about 6dp apart — the pitch is stretched so the bars
+ * span the whole width, edge to edge — ruby up to [progress] and [WaveformIdle] after it — the played part sweeps smoothly through a bar rather than flipping
+ * whole bars. There is no per-line amplitude data, so bar heights are a stable pseudo-random
+ * pattern derived from [seed]: every line gets its own shape, and it never changes between
+ * frames. [progress] is read in the draw phase.
+ */
+@Composable
+fun VoiceWaveform(
+    seed: Long,
+    progress: () -> Float,
+    modifier: Modifier = Modifier,
+) {
+    Canvas(modifier) {
+        val bar = 3.dp.toPx()
+        val count = ((size.width + 3.dp.toPx()) / 6.dp.toPx()).toInt().coerceAtLeast(1)
+        val pitch = if (count > 1) (size.width - bar) / (count - 1) else 0f
+        fun DrawScope.bars(color: Color) {
+            for (i in 0 until count) {
+                val height = size.height * waveformLevel(seed, i)
+                val x = i * pitch + bar / 2
+                val top = (size.height - height) / 2
+                drawLine(
+                    color,
+                    Offset(x, top + bar / 2),
+                    Offset(x, top + height - bar / 2),
+                    strokeWidth = bar,
+                    cap = StrokeCap.Round
+                )
+            }
+        }
+        bars(WaveformIdle)
+        val played = size.width * progress().coerceIn(0f, 1f)
+        if (played > 0f) clipRect(right = played) { bars(Ruby) }
+    }
+}
+
+/**
+ * Bar height as a fraction (0.3–1.0) of the waveform's height: an integer hash of (seed, index).
+ * Bit-for-bit the same as the iOS port, so a line has the same bars, in the same order, on
+ * both platforms.
+ */
+internal fun waveformLevel(seed: Long, index: Int): Float {
+    var h = (seed.toInt() * 0x9E3779B1.toInt()) xor (index * 0x85EBCA77.toInt())
+    h = h xor (h ushr 15)
+    h *= 0x2C1B3C6D
+    h = h xor (h ushr 12)
+    h *= 0x297A2D39
+    h = h xor (h ushr 15)
+    return 0.3f + 0.7f * (h and 0xFFFF) / 65535f
 }
 
 /**

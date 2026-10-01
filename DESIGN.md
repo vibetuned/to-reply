@@ -42,7 +42,7 @@ com.vibetuned.to_reply
     ├── navigation/                TopLevelDestination, ToReplyNavGraph, TrainingRoute
     ├── player/                    MiniPlayerBar (the app's only transport UI)
     ├── theme/                     Color / Theme / Type / Shape + Components (StageTrack,
-    │                               CharacterBadge) — the fixed dark design system
+    │                               VoiceWaveform, CharacterBadge) — the fixed dark design system
     └── training/                  TrainingScreen + TrainingViewModel + SpeakerPickerSheet
                                     + TrainingUiState (the chat, drills, gauges)
 ```
@@ -178,7 +178,11 @@ the last scene (no-op). Scene starts come from the script, not the m4b chapters.
 
 **There is no full player screen.** The `MiniPlayerBar` (root Scaffold's bottom bar, visible
 everywhere including the training screen) *is* the transport: artwork, title, progress strip,
-play/pause with a buffering spinner, and the two scene buttons. Now-playing state is read
+play/pause with a buffering spinner, the two scene buttons, and a scenes button opening
+`ScenePickerSheet` — the play's chapter list: every scene with its start time, the current one
+marked; picking one seeks there without touching play/pause, like the skip buttons. Scenes come
+from the script (the m4b's chapters mirror them and stay unread), so the list, the skips and
+the notification buttons always agree. Now-playing state is read
 straight off the controller via the `produceState` + `Player.Listener` + 1 s poll pattern.
 Expanding it navigates to the training screen — which is this app's "full player".
 
@@ -230,14 +234,18 @@ controller flow) and:
 - updates `activeItemIndex` **only when it changes** — screen-wide state moves at
   line-change frequency, not 3 Hz;
 - mirrors the raw position into a **separate** `positionMs: StateFlow<Long>`, deliberately
-  outside `TrainingUiState`. Only the *active* bubble's progress gauge collects it (a
+  outside `TrainingUiState`. Only the *active* bubble's voice row collects it (a
   conditional composable read), so the 3 Hz ticks recompose exactly one row.
 
-Per-line gauges derive their fill from the already-cheap comparisons: before active = full,
+Each bubble is a voice message: a round play button, a waveform and the line's duration, above
+the transcript. The waveforms derive their fill from the already-cheap comparisons: before active = full,
 after = empty, active = live fraction smoothed by a 300 ms linear `animateFloatAsState` that
 turns the stepped polls into a continuous sweep (and doubles as a fill/drain animation on
 seeks). `seekTo` also sets the position flow optimistically so the tapped bubble doesn't lag
-one poll.
+one poll. Tapping the bubble only seeks (playback state unchanged); its play button is
+`playFrom` — seek, then `play()` — so a paused rehearsal can restart from any line. There is no
+per-line amplitude data, so bar heights are a stable hash of the line's start time
+(`waveformLevel`, bit-identical to the iOS port).
 
 ### Auto-follow that knows who's scrolling
 
@@ -255,10 +263,10 @@ design, re-entering the screen always resumes following.
 
 Two booleans from `TrainingPreferences` (DataStore — prefs are the source of truth; the
 toggles write, collectors feed state back). Hiding a bubble's text keeps the speaker name
-(added to "me" bubbles in that mode — normally alignment identifies them) and the gauge,
-whose row is then given an explicit width **proportional to the line's duration** (72–272 dp,
-capped at 20 s) — with no text to size the bubble, the gauge itself encodes line length,
-voice-message style. Staging notes are never hidden; they're context, not lines to learn.
+(added to "me" bubbles in that mode — normally alignment identifies them) and the voice row,
+whose waveform is then given an explicit width **proportional to the line's duration**
+(40–200 dp, capped at 20 s) — with no text to size the bubble, the waveform itself encodes line
+length, voice-message style. Staging notes are never hidden; they're context, not lines to learn.
 
 ### Keep-screen-on
 
@@ -320,9 +328,10 @@ proscenium gold for stage directions. The iOS app implements the same system
   M3 roles (`title*` = headline-lg/md/sm, `body*` = body-lg/md/sm); the two styles M3 has no
   role for, `LabelCharacter` (uppercase, 0.08em) and `StageDirection` (Inter italic), are
   top-level vals.
-- **Components** (`ui/theme/Components.kt`): `StageTrack`, the progress rail used everywhere
-  (hairline track, ruby fill, 4dp `BlurMaskFilter` glow — only the live line glows, or a played
-  scene becomes a wall of lit bars); `CharacterBadge`, the glass masks-plus-persona pill for
+- **Components** (`ui/theme/Components.kt`): `StageTrack`, the progress rail for Home rows,
+  the import banner and the mini-player (hairline track, ruby fill, 4dp `BlurMaskFilter` glow);
+  `VoiceWaveform`, the dialogue cards' bars (ruby up to the playhead, grey after, the fill
+  sweeping through a bar via `clipRect`); `CharacterBadge`, the glass masks-plus-persona pill for
   roles on Home and the training screen's role chip. Glows use Compose 1.9's
   `Modifier.dropShadow` (CSS-like, no elevation light source); the speak-now aura pulses through
   its block form, so the animation never leaves the draw phase.
