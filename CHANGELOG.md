@@ -1,6 +1,20 @@
 # Changelog
 
-## Unreleased
+## v1.1 — 2026-10-01
+
+A new look and a voice-message script: the "Theatrical Proscenium" design system, a new icon,
+waveform lines you can play from, and a scene list in the player. iOS 1.1 ships the same changes
+(plus two layout fixes of its own); its App Store notes are in to-reply-ios
+`metadata/listing.md`.
+
+### Play Store release notes (≤ 500 chars)
+
+```
+• A new look: a darkened-theatre design with velvet-red dialogue cards, gold stage directions and a new app icon (themed icon on Android 13+).
+• Every line is now a voice message: its waveform fills as it plays, and its play button plays from that line.
+• On your own line the button becomes a glowing mic: your turn to speak.
+• New scene list in the player: jump straight to any scene.
+```
 
 ### Visual design
 - **"Theatrical Proscenium" look** — stage-pit canvas, ruby and velvet dialogue cards,
@@ -8,13 +22,18 @@
   pulsing "speak now" prompt. Dark only; no longer follows wallpaper colors.
 - **New app icon** — comedy/tragedy masks under a spotlight, with a themed (monochrome)
   variant for Android 13+.
+
+### Training screen
 - **Voice-message lines** — each dialogue card shows a play button, a waveform that fills as the
-  line plays, and its duration above the text. The play button plays from that line (tapping
-  the card still just jumps there); on your own line it turns into a mic while it's your turn.
+  line plays, and its duration above the text. The waveform spans the card; with your text
+  hidden, its width still encodes the line's length.
+- **Play from any line** — a line's play button seeks there and starts playback, even when
+  paused; tapping the card itself still only jumps there. On your own line under the playhead
+  the button becomes a glowing mic: your turn to speak.
 
 ### Player
 - **Scene picker** — a list button on the mini-player opens the play's scenes with their start
-  times; pick one to jump straight to it.
+  times, the current one marked; pick one to jump straight to it.
 
 ## v1.0 — 2026-07-24
 

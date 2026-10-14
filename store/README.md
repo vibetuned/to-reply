@@ -9,7 +9,7 @@ screenshots/tablet-10/   1600x2560   (5:8)
   01-library.png            The library: five imported plays, roles and listening progress
   02-training-normal.png    Training, reading along: chat script synced to the audio
   03-rehearsal-mute.png     Rehearsal mute: playhead inside a LOMOV line, "speak now" banner
-  04-text-drill.png         Memorization drill: your lines collapsed to a name + duration gauge
+  04-text-drill.png         Memorization drill: your lines collapsed to a name + duration-sized waveform
 ```
 
 All eight are 24-bit RGB PNG, within the Play Console limits (320–3840 px per side,
@@ -24,7 +24,13 @@ Both are the existing ln-reader AVDs, Android 16 (API 36, `google_apis`, x86_64)
 | `ln_phone` | 1080x1920 | 420 |
 | `ln_tablet10` | 1600x2560 | 276 physical, **360 override** (`wm density`) |
 
-Dark mode with Material You dynamic colour, which is where the blue-grey palette comes from.
+The app is dark-only with a fixed palette (the "Theatrical Proscenium" design system, see
+`DESIGN.md`), so the system theme no longer affects the shots.
+
+The v1.1 set was shot from macOS on temporary AVDs at the same sizes and densities, built on
+the Android 16 Play-Store image: no `adb root` there, so app storage was reached with `run-as`
+(debug build) and the Room DB edited off-device and pushed back. Same plays, positions and
+states as `run_shots.sh`.
 
 ## Reproducing
 

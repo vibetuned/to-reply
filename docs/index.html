@@ -8,7 +8,7 @@
   <link rel="icon" type="image/webp" href="assets/favicon.webp" />
   <link rel="stylesheet" href="assets/css/style.css" />
   <meta property="og:title" content="2Reply — rehearse your lines" />
-  <meta property="og:description" content="The app that plays every part but yours, on Android and iPhone / iPad. Synced chat-style script, per-line timing gauges, memorization drills — 100% on-device." />
+  <meta property="og:description" content="The app that plays every part but yours, on Android and iPhone / iPad. Synced chat-style script with voice-message lines, memorization drills — 100% on-device." />
   <meta property="og:type" content="website" />
 </head>
 <body>
@@ -62,8 +62,8 @@
         <a class="btn btn-ghost" href="#screenshots">See it in action →</a>
       </div>
       <div class="badge-row">
-        <span class="badge">★ Google Play · v1.0</span>
-        <span class="badge">★ App Store · v1.0</span>
+        <span class="badge">★ Google Play · v1.1</span>
+        <span class="badge">★ App Store · v1.1</span>
         <span class="badge badge-android">Native Android · Kotlin + Jetpack Compose · 13+</span>
         <span class="badge badge-ios">Native iOS · Swift + SwiftUI · 17+</span>
         <span class="badge">100% on-device · no network at all</span>
@@ -86,7 +86,7 @@
           <figure class="shot"><a href="store-screenshots/phone/01-library.png"><img src="assets/shots/android/01-library.webp" alt="2Reply on Android — the library of imported plays with roles and progress" loading="lazy" /></a><figcaption>Library</figcaption></figure>
           <figure class="shot"><a href="store-screenshots/phone/02-training-normal.png"><img src="assets/shots/android/02-training-normal.webp" alt="2Reply on Android — the script as a chat, synced to the recording" loading="lazy" /></a><figcaption>Reading along</figcaption></figure>
           <figure class="shot"><a href="store-screenshots/phone/03-rehearsal-mute.png"><img src="assets/shots/android/03-rehearsal-mute.webp" alt="2Reply on Android — your line playing muted, with the speak-now banner" loading="lazy" /></a><figcaption>Rehearsal mute</figcaption></figure>
-          <figure class="shot"><a href="store-screenshots/phone/04-text-drill.png"><img src="assets/shots/android/04-text-drill.webp" alt="2Reply on Android — your lines collapsed to a name and a timing gauge" loading="lazy" /></a><figcaption>Memorization drill</figcaption></figure>
+          <figure class="shot"><a href="store-screenshots/phone/04-text-drill.png"><img src="assets/shots/android/04-text-drill.webp" alt="2Reply on Android — your lines collapsed to a name and a duration-sized waveform" loading="lazy" /></a><figcaption>Memorization drill</figcaption></figure>
         </div>
       </div>
 
@@ -96,7 +96,7 @@
           <figure class="shot"><a href="store-screenshots/iphone/01-library.png"><img src="assets/shots/ios/01-library.webp" alt="2Reply on iPhone — the library of imported plays with roles and progress" loading="lazy" /></a><figcaption>Library</figcaption></figure>
           <figure class="shot"><a href="store-screenshots/iphone/02-training-normal.png"><img src="assets/shots/ios/02-training-normal.webp" alt="2Reply on iPhone — the script as a chat, synced to the recording" loading="lazy" /></a><figcaption>Reading along</figcaption></figure>
           <figure class="shot"><a href="store-screenshots/iphone/03-rehearsal-mute.png"><img src="assets/shots/ios/03-rehearsal-mute.webp" alt="2Reply on iPhone — your line playing muted, with the speak-now banner" loading="lazy" /></a><figcaption>Rehearsal mute</figcaption></figure>
-          <figure class="shot"><a href="store-screenshots/iphone/04-text-drill.png"><img src="assets/shots/ios/04-text-drill.webp" alt="2Reply on iPhone — your lines collapsed to a name and a timing gauge" loading="lazy" /></a><figcaption>Memorization drill</figcaption></figure>
+          <figure class="shot"><a href="store-screenshots/iphone/04-text-drill.png"><img src="assets/shots/ios/04-text-drill.webp" alt="2Reply on iPhone — your lines collapsed to a name and a duration-sized waveform" loading="lazy" /></a><figcaption>Memorization drill</figcaption></figure>
         </div>
       </div>
 
@@ -111,9 +111,42 @@
   <section id="whatsnew" class="alt">
     <div class="wrap">
       <div class="section-head">
-        <span class="ver-pill">v1.0 · 25 Jul 2026</span>
+        <span class="ver-pill">v1.1 · 1 Oct 2026</span>
         <h2>What's new</h2>
-        <p>The first release — everything below is new.</p>
+        <p>A new look, and a script you can play line by line.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <span class="ico">🎭</span>
+          <h3>A new look</h3>
+          <p>A darkened-theatre design: velvet-red dialogue cards, <strong>gold stage directions</strong>, a spotlight on the line being spoken — and a new icon, with a themed version on Android 13+.</p>
+        </div>
+        <div class="card">
+          <span class="ico">🎙️</span>
+          <h3>Every line is a voice message</h3>
+          <p>Each line shows a waveform that <strong>fills as it plays</strong>, next to its spoken duration. Tap its play button to play from that line — even when paused.</p>
+        </div>
+        <div class="card">
+          <span class="ico">🎤</span>
+          <h3>Your turn, at a glance</h3>
+          <p>When the playhead reaches one of your lines, its play button becomes a <strong>glowing mic</strong> and the "speak now" prompt pulses.</p>
+        </div>
+        <div class="card">
+          <span class="ico">📑</span>
+          <h3>Scene list</h3>
+          <p>A new button on the player lists every scene with its start time — <strong>jump straight to any scene</strong>, from any screen.</p>
+        </div>
+        <div class="card">
+          <span class="ico">🛠️</span>
+          <h3>iPhone &amp; iPad fixes</h3>
+          <p>The "jump to current line" button no longer hides behind the player, and the last lines of a play now scroll clear of it.</p>
+        </div>
+      </div>
+
+      <div class="section-head" style="margin-top:64px;">
+        <span class="ver-pill">v1.0 · 25 Jul 2026</span>
+        <h2>The foundations</h2>
+        <p>What the first release brought — still the heart of every rehearsal.</p>
       </div>
       <div class="grid">
         <div class="card">
@@ -127,24 +160,24 @@
           <p>Playback volume drops to zero <strong>exactly during your characters' lines</strong> and comes back after — the play stays on schedule while you deliver the line. Works from the lock screen with the app in the background.</p>
         </div>
         <div class="card">
-          <span class="ico">🎭</span>
+          <span class="ico">👥</span>
           <h3>One role or several</h3>
           <p>Pick any number of characters from the cast list (sorted by line count). All of their lines mute and flip to your side of the chat — rehearse two parts, or practice as a duo on one device.</p>
         </div>
         <div class="card">
           <span class="ico">🙈</span>
           <h3>Text-hiding drills</h3>
-          <p>Two toggles: hide <strong>your</strong> lines to test memorization, or hide <strong>everyone else's</strong> to train reacting to the spoken cue. Hidden bubbles keep the name and a duration-scaled gauge, like a voice message.</p>
+          <p>Two toggles: hide <strong>your</strong> lines to test memorization, or hide <strong>everyone else's</strong> to train reacting to the spoken cue. Hidden lines keep the name and a waveform sized to the line's length.</p>
         </div>
         <div class="card">
           <span class="ico">⏱️</span>
-          <h3>Per-line timing gauges</h3>
-          <p>Every line carries a small progress bar with its spoken duration — full for what's played, filling live on the current line. During your muted lines it doubles as a <strong>pacing guide</strong>.</p>
+          <h3>Per-line timing</h3>
+          <p>Every line shows its spoken duration and fills as it plays — full for what's played, live on the current line. During your muted lines it doubles as a <strong>pacing guide</strong>.</p>
         </div>
         <div class="card">
           <span class="ico">⏭️</span>
           <h3>Scene-by-scene transport</h3>
-          <p>Previous / next <strong>scene</strong> buttons in the app and on the media notification — the meaningful jump unit when rehearsing, not an arbitrary ±30 seconds. Tap any bubble to jump straight to that line.</p>
+          <p>Previous / next <strong>scene</strong> buttons in the app and on the lock screen or media notification — the meaningful jump unit when rehearsing, not an arbitrary ±30 seconds. Tap any line to jump straight to it.</p>
         </div>
       </div>
       <p class="changelog-foot">
@@ -160,7 +193,7 @@
         <h2>Rehearsal modes</h2>
         <p>
           Two independent toggles on the training screen change what you're practicing.
-          Hidden lines keep the speaker's name and their timing gauge — you always know
+          Hidden lines keep the speaker's name and their waveform — you always know
           who speaks and for how long.
         </p>
       </div>
@@ -180,7 +213,7 @@
             </tr>
             <tr>
               <td>hidden</td><td>text shown</td>
-              <td><strong>Memorization</strong> — can you recall the line with only its name tag and timing bar?</td>
+              <td><strong>Memorization</strong> — can you recall the line with only its name tag and waveform?</td>
             </tr>
             <tr>
               <td>hidden</td><td>hidden</td>
@@ -229,7 +262,7 @@
           <ul>
             <li>Chat-style script with speaker names, acting directions, staging notes, and scene headers.</li>
             <li>Auto-follow keeps the active line in view; grab the list to pause it, tap the target button to snap back.</li>
-            <li>Tap any bubble to seek there. A <strong>"Your line — speak now"</strong> banner shows while muted.</li>
+            <li>Every line is a voice message — tap it to seek there, or its play button to play from there. A <strong>"Your line — speak now"</strong> banner shows while muted.</li>
           </ul>
         </div>
         <div class="card">
@@ -237,7 +270,7 @@
           <h3>Player</h3>
           <ul>
             <li>Foreground media session — background playback, lock-screen controls.</li>
-            <li>Mini-player on every screen: play/pause and previous / next <strong>scene</strong>.</li>
+            <li>Mini-player on every screen: play/pause, previous / next <strong>scene</strong>, and a scene list to jump anywhere.</li>
             <li>Position auto-saves every 5 s and on pause; roles and drill settings are remembered.</li>
             <li>The screen stays awake while playing — hands-free through a whole scene.</li>
           </ul>

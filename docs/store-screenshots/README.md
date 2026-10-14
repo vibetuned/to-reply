@@ -12,7 +12,7 @@ ipad13/     2064x2752   iPad 13"           (App Store Connect)
   01-library.png           The library: five plays, roles, listening progress
   02-training-normal.png   Reading along: the script as a chat, synced to the audio
   03-rehearsal-mute.png    Rehearsal mute: playhead inside your line, "speak now" banner
-  04-text-drill.png        Memorization drill: your lines collapsed to a name + gauge
+  04-text-drill.png        Memorization drill: your lines collapsed to a name + waveform
 ```
 
 Optimised WebP thumbnails for the page itself live in
