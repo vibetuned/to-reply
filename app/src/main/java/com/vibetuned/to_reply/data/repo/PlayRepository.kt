@@ -3,6 +3,7 @@ package com.vibetuned.to_reply.data.repo
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.room.withTransaction
 import com.vibetuned.to_reply.data.db.PlayDao
@@ -21,6 +22,9 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.OutputStream
 import java.util.UUID
+import java.util.zip.Deflater
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import kotlin.math.abs
 
 class PlayRepository(
@@ -35,10 +39,34 @@ class PlayRepository(
     data class ImportProgress(
         val phase: Phase,
         val bytesRead: Long = 0,
-        val totalBytes: Long = -1
+        val totalBytes: Long = -1,
+        /** 1-based position of the play being imported, when a zip brings several; else 0. */
+        val playIndex: Int = 0,
+        val playCount: Int = 0
     ) {
-        enum class Phase { Validating, Copying, Finalizing }
+        enum class Phase { Extracting, Validating, Copying, Finalizing }
     }
+
+    /**
+     * What a zip import brought in. A zip can hold several plays, and some of them can fail while
+     * the rest succeed, which [failures] lists by file name.
+     */
+    data class ImportOutcome(
+        val plays: List<Play>,
+        val failures: List<Pair<String, String>> = emptyList()
+    ) {
+        /** A message for the user when part of the import didn't make it; null when all did. */
+        val problem: String?
+            get() {
+                if (failures.isEmpty()) return null
+                val total = plays.size + failures.size
+                val names = failures.joinToString("; ") { (name, why) -> "$name: $why" }
+                return "Imported ${plays.size} of $total plays. Couldn't import $names"
+            }
+    }
+
+    /** A file ready for the system share sheet. */
+    data class PlayShare(val uri: Uri, val mimeType: String, val fileName: String, val title: String)
 
     /**
      * Parsed scripts by play id. Scripts are immutable once imported, so this only ever grows
@@ -85,10 +113,15 @@ class PlayRepository(
      * fails in milliseconds, not after tens of megabytes. A cleanup list unwinds any partial
      * on-disk state when a later step fails — the play directory either ends up complete and
      * referenced by a DB row, or doesn't exist at all.
+     *
+     * [adoptAudio] is a recording already on this device that the import may take over — one just
+     * extracted from a zip. It is moved into place rather than copied; [audioUri] is then only
+     * that file's address.
      */
     suspend fun import(
         audioUri: Uri,
         scriptUri: Uri,
+        adoptAudio: File? = null,
         onProgress: (ImportProgress) -> Unit = {}
     ): Result<Play> = withContext(Dispatchers.IO) {
         runCatching {
@@ -107,12 +140,21 @@ class PlayRepository(
                 }
                 scriptParser.validate(script)?.let { error(it) }
 
-                val audioMeta = queryUriMeta(audioUri)
+                val audioMeta = adoptAudio?.let { UriMeta(it.name, it.length()) } ?: queryUriMeta(audioUri)
                 val totalBytes = audioMeta.size.takeIf { it > 0 } ?: -1L
                 val audioFile = File(dir, AUDIO_FILE_NAME)
-                audioFile.outputStream().buffered().use { out ->
-                    copyStream(audioUri, out) { copied ->
-                        onProgress(ImportProgress(ImportProgress.Phase.Copying, copied, totalBytes))
+                if (adoptAudio != null) {
+                    // Already on this device (just unzipped, on the same storage): a rename, so a
+                    // play from a zip never exists twice on disk.
+                    if (!adoptAudio.renameTo(audioFile)) {
+                        adoptAudio.copyTo(audioFile, overwrite = true)
+                        adoptAudio.delete()
+                    }
+                } else {
+                    audioFile.outputStream().buffered().use { out ->
+                        copyStream(audioUri, out) { copied ->
+                            onProgress(ImportProgress(ImportProgress.Phase.Copying, copied, totalBytes))
+                        }
                     }
                 }
 
@@ -159,6 +201,155 @@ class PlayRepository(
                 cleanup.forEach { runCatching(it) }
             }
         }
+    }
+
+    // ── zips ───────────────────────────────────────────────────────────────────
+
+    /**
+     * Whether [uri] is a zip rather than a recording — the import button's first picker takes
+     * either. Goes by the file name, or failing that the provider's type.
+     */
+    suspend fun isZip(uri: Uri): Boolean = withContext(Dispatchers.IO) {
+        queryUriMeta(uri).name?.let { return@withContext it.endsWith(".zip", ignoreCase = true) }
+        val type = runCatching { context.contentResolver.getType(uri) }.getOrNull()
+        type == "application/zip" || type == "application/x-zip-compressed"
+    }
+
+    /**
+     * Imports every play in a zip ([PlayZipPlanner] pairs the recordings with their scripts).
+     * Entries are unpacked into a staging folder beside the plays, so each recording is then moved,
+     * not copied, into place; the staging folder is removed whatever happens. One play failing
+     * doesn't stop the others; the outcome lists what failed, including any recording that came
+     * without a script.
+     */
+    suspend fun importZip(
+        uri: Uri,
+        onProgress: (ImportProgress) -> Unit = {}
+    ): Result<ImportOutcome> = withContext(Dispatchers.IO) {
+        runCatching {
+            val meta = queryUriMeta(uri)
+            val staging = File(context.filesDir, "$STAGING_DIR/${UUID.randomUUID()}")
+            try {
+                val total = meta.size.takeIf { it > 0 } ?: -1L
+                onProgress(ImportProgress(ImportProgress.Phase.Extracting, 0, total))
+                val extracted = ZipExtractor.extract(
+                    open = { context.contentResolver.openInputStream(uri) ?: error("Couldn't open the zip.") },
+                    dir = staging
+                ) { read -> onProgress(ImportProgress(ImportProgress.Phase.Extracting, read, total)) }
+
+                // A .json only counts if it is a play script; the planner can't look inside.
+                val usable = extracted.filter { path ->
+                    !path.endsWith(".json", ignoreCase = true) || isPlayScript(File(staging, path))
+                }
+                val plan = PlayZipPlanner.plan(usable)
+                require(plan.plays.isNotEmpty()) {
+                    if (plan.unpaired.isEmpty()) "There is no play in this zip: it needs a recording (.m4b) and its script (play.json)."
+                    else "There is no play.json next to ${plan.unpaired.joinToString { it.substringAfterLast('/') }}."
+                }
+
+                val plays = mutableListOf<Play>()
+                val failures = plan.unpaired
+                    .map { it.substringAfterLast('/') to "no play.json next to it" }
+                    .toMutableList()
+                plan.plays.forEachIndexed { index, zipPlay ->
+                    val audio = File(staging, zipPlay.audio)
+                    import(
+                        audioUri = audio.toUri(),
+                        scriptUri = File(staging, zipPlay.script).toUri(),
+                        onProgress = { onProgress(it.copy(playIndex = index + 1, playCount = plan.plays.size)) },
+                        adoptAudio = audio
+                    )
+                        .onSuccess { plays += it }
+                        .onFailure { failures += audio.name to (it.message ?: it.javaClass.simpleName) }
+                }
+                if (plays.isEmpty()) {
+                    val (name, why) = failures.first()
+                    error("Couldn't import $name: $why")
+                }
+                ImportOutcome(plays, failures)
+            } finally {
+                staging.deleteRecursively()
+            }
+        }
+    }
+
+    /** A play script is the JSON the producer pipeline writes: a `scenes` list of timed entries. */
+    private fun isPlayScript(file: File): Boolean = runCatching {
+        file.length() < MAX_SCRIPT_BYTES && file.readText().contains("\"scenes\"")
+    }.getOrDefault(false)
+
+    // ── sharing ────────────────────────────────────────────────────────────────
+
+    /**
+     * Prepares a play to send with Quick Share, Nearby, mail or anything else on the share sheet,
+     * as the one file 2Reply on the other end imports whole: a zip holding the recording and its
+     * script in a folder named after the play — the layout [importZip] reads. Written uncompressed
+     * (audio doesn't shrink), so it costs one copy and no CPU; [onProgress] runs from 0 to 1.
+     * Each share gets its own folder, so a second share can't cut short a transfer still reading
+     * the first.
+     */
+    suspend fun prepareShare(playId: String, onProgress: (Float) -> Unit = {}): PlayShare =
+        withContext(Dispatchers.IO) {
+            val play = playDao.byId(playId) ?: error("This play is no longer in the library.")
+            val audio = File(play.audioPath).takeIf { it.isFile } ?: error("This play's recording is missing.")
+            val script = File(play.scriptPath).takeIf { it.isFile } ?: error("This play's script is missing.")
+            pruneShares()
+            val name = shareFileName(play.title)
+            val zip = File(shareDir(), "${UUID.randomUUID()}/$name.zip").apply { parentFile?.mkdirs() }
+            val entries = listOf("$name/$name.m4b" to audio, "$name/$SCRIPT_FILE_NAME" to script)
+            val total = entries.sumOf { it.second.length() }.coerceAtLeast(1)
+            var written = 0L
+            try {
+                ZipOutputStream(zip.outputStream().buffered(SHARE_BUFFER)).use { out ->
+                    // Deflate at level 0: stored blocks, so no CPU spent on audio that won't
+                    // compress, and one pass — the checksums are computed as the bytes go by.
+                    out.setLevel(Deflater.NO_COMPRESSION)
+                    for ((entry, file) in entries) {
+                        out.putNextEntry(ZipEntry(entry))
+                        file.inputStream().use { input ->
+                            val buffer = ByteArray(SHARE_BUFFER)
+                            while (true) {
+                                val n = input.read(buffer)
+                                if (n < 0) break
+                                out.write(buffer, 0, n)
+                                written += n
+                                onProgress((written.toFloat() / total).coerceIn(0f, 1f))
+                            }
+                        }
+                        out.closeEntry()
+                    }
+                }
+            } catch (e: Throwable) {
+                zip.parentFile?.deleteRecursively()
+                throw e
+            }
+            PlayShare(
+                uri = FileProvider.getUriForFile(context, "${context.packageName}.share", zip),
+                mimeType = "application/zip",
+                fileName = zip.name,
+                title = play.title
+            )
+        }
+
+    private fun shareDir() = File(context.cacheDir, "share")
+
+    /**
+     * Shares more than a day old. Recent ones stay: Android restarts the app to serve a file
+     * another app is still reading, and deleting it then would cut the transfer short.
+     */
+    private fun pruneShares() {
+        val dayAgo = System.currentTimeMillis() - 24L * 60 * 60 * 1000
+        shareDir().listFiles()?.filter { it.lastModified() < dayAgo }?.forEach { it.deleteRecursively() }
+    }
+
+    /**
+     * Removes what an earlier run may have left: a zip import's staging folder, when the app was
+     * stopped halfway through one, and old shares. Called once per process start, when no import
+     * can be under way.
+     */
+    fun cleanUpTemporaryFiles() {
+        File(context.filesDir, STAGING_DIR).deleteRecursively()
+        pruneShares()
     }
 
     /** Remove the play, its saved position, and its whole on-disk directory. */
@@ -216,5 +407,13 @@ class PlayRepository(
 
         /** Max |m4b duration − script duration| before we assume a mismatched pair. */
         private const val DURATION_TOLERANCE_MS = 30_000L
+
+        /** Where a zip import unpacks, beside `plays/` so recordings move into place by rename. */
+        private const val STAGING_DIR = "import-staging"
+
+        /** No real script comes close; anything bigger isn't worth reading to find out. */
+        private const val MAX_SCRIPT_BYTES = 16L * 1024 * 1024
+
+        private const val SHARE_BUFFER = 256 * 1024
     }
 }

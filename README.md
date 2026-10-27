@@ -21,6 +21,12 @@ Play Store yet — build from source (below).
 - Import a play from any SAF source with a **two-step picker**: the `.m4b` recording, then the
   `play.json` script. Both are **copied into private storage**; the script is validated before
   the large audio copy, and a duration cross-check rejects mismatched pairs.
+- Or pick a **`.zip` of plays** — a Drive download of a plays folder, say: every recording comes
+  in with the script beside it, in one go. It streams straight from the source, each recording
+  is moved into place rather than copied twice, macOS's `__MACOSX` copies are skipped, and one
+  play failing doesn't stop the rest.
+- **Share a play** with Quick Share, Nearby or anything on the share sheet: it travels as one
+  zip with its recording and script, which 2Reply on the other end imports whole.
 - Each play shows its cover (from the m4b), duration, listening progress, and the roles you're
   rehearsing. Delete with confirmation removes the files too.
 - On launch the app reopens your last play — paused, where you left it.
@@ -84,7 +90,7 @@ must match the recording. Import rejects pairs whose total durations differ by m
 
 ## Requirements
 
-- Android 13 or newer (minSdk 33, targetSdk 36).
+- Android 10 or newer (minSdk 29, targetSdk 36).
 - A file manager / cloud app that exposes a `DocumentsProvider` for your `.m4b` and
   `play.json` files.
 

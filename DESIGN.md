@@ -30,7 +30,8 @@ com.vibetuned.to_reply
 │   ├── db/                        Room: PlayEntity, PositionEntity, DAOs, ToReplyDatabase
 │   ├── model/                     Play (domain), PlayScript / PlayScene / PlayEntry / EntryType
 │   ├── prefs/TrainingPreferences  DataStore: the two text-hiding drill toggles
-│   ├── repo/                      PlayRepository (import / script cache), PositionRepository
+│   ├── repo/                      PlayRepository (import, zip import, sharing / script cache),
+│   │                               PositionRepository, PlayZipPlanner, ZipExtractor, shareFileName
 │   └── script/PlayScriptParser    play.json → PlayScript (org.json, tolerant)
 ├── m4b/                           MP4 atom parser, lifted verbatim from ln-reader
 │                                   (M4bSource, AtomReader, M4bParser)
@@ -144,6 +145,42 @@ remote/local heuristic** — both files are always copied, so the app never need
 
 Duplicate imports are allowed (UUID-keyed, no content hashing) — same trade-off as ln-reader;
 duplicates are visible and deletable.
+
+### Zip import
+
+Ported from ln-reader 1.7's zip import, minus EPUBs and collections. The first picker also
+accepts a `.zip`; `HomeViewModel.onFirstPick` asks the repository whether the pick is one (a
+provider round-trip, so off the picker callback) and either imports it outright or stashes the
+recording and asks the screen for the script picker (`HomeUiState.needsScript`).
+
+```
+PlayRepository.importZip(uri)
+  1. ZipExtractor → filesDir/import-staging/<uuid>/   // streams; only .m4b/.json, no __MACOSX,
+                                                     //   no hidden files, zip-slip guarded
+  2. keep only .json that look like scripts ("scenes")
+  3. PlayZipPlanner.plan(paths)                       // pure, unit-tested
+  4. per play: import(audio, script, adoptAudio = audio)   // the recording is renamed into
+                                                           //   plays/<id>/, not copied
+  finally: delete the staging folder
+```
+
+`PlayZipPlanner` groups files by folder and pairs each `.m4b` with the `.json` of the same name,
+or a folder's lone leftover recording with its lone script or `play.json` — the producer
+pipeline's layout. A recording left without a script is reported, never guessed; one play
+failing doesn't stop the rest, and `ImportOutcome.problem` says what didn't make it.
+`ZipExtractor` is ln-reader's verbatim (streams first, falls back to a local copy read through
+the central directory for archives that can't be streamed or use non-UTF-8 names). An
+interrupted import's staging folder is removed at the next process start.
+
+### Sharing
+
+`PlayRepository.prepareShare` writes `<Title>/<Title>.m4b` + `<Title>/play.json` into one
+uncompressed zip (stored deflate: one pass, no CPU on audio) under `cache/share/<uuid>/`, served
+by a `FileProvider` (`res/xml/share_paths.xml`, nothing browsable) through `ACTION_SEND`. It's
+exactly the layout zip import reads, so 2Reply on the other end rebuilds the play whole. Unlike
+ln-reader, there's no bare-file case to share in place: a play is always a recording plus its
+script. Each share gets its own folder, so a second share can't cut short a transfer still
+reading the first; shares older than a day are pruned on the next share and at process start.
 
 ## Player
 
@@ -351,7 +388,7 @@ half scale, and its icon square spans artwork pixels 260–1788.
 - Foreground = the art (opaque, so the stage-pit `ic_launcher_background` never shows);
   monochrome = the two masks as a solid silhouette with the eyes, mouths and tear cut out,
   extracted from the art's glowing outlines (themed icons, Android 13+).
-- Legacy mipmaps (unused at minSdk 33, kept current) and the 512px Play Store icon use the
+- Legacy mipmaps (unused at minSdk 29, kept current) and the 512px Play Store icon use the
   render's framing directly.
 
 ## AGP 9 quirks worth remembering

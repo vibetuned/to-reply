@@ -1,5 +1,7 @@
 package com.vibetuned.to_reply.ui.home
 
+import android.content.ClipData
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -20,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.TheaterComedy
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -49,6 +52,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
@@ -69,13 +73,21 @@ import com.vibetuned.to_reply.ui.theme.SurfaceElevated
 import java.io.File
 
 /**
- * MIME filters for the two-step import. `application/octet-stream` appears in both because many
- * providers report it for anything they can't classify — .m4b files in particular.
+ * MIME filters for the two-step import. The first step also takes a .zip of plays, which imports
+ * on its own (some providers label zips with the older Windows type, so both are listed).
+ * `application/octet-stream` appears in both because many providers report it for anything they
+ * can't classify — .m4b files in particular.
  */
-private val AUDIO_MIME_TYPES = arrayOf("audio/mp4", "audio/x-m4b", "application/octet-stream")
+private val AUDIO_MIME_TYPES = arrayOf(
+    "audio/mp4", "audio/x-m4b",
+    "application/zip", "application/x-zip-compressed", "application/octet-stream"
+)
 private val SCRIPT_MIME_TYPES = arrayOf("application/json", "application/octet-stream")
 
-/** Home: the list of imported plays. The FAB runs the two-step import (.m4b, then play.json). */
+/**
+ * Home: the list of imported plays. The FAB runs the import: a .m4b then its play.json, or a .zip
+ * of plays in one go. Each row can be shared, as one zip the other end imports whole.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -94,9 +106,9 @@ fun HomeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var playPendingDelete by remember { mutableStateOf<Play?>(null) }
 
-    // Two-step SAF import: the audio picker's callback stashes the URI on the VM (surviving the
-    // recomposition churn of launching another activity) and immediately opens the script picker.
-    // Cancelling either step aborts with nothing written.
+    // Two-step SAF import: the first pick goes to the VM, which imports a zip on the spot or
+    // stashes a recording (surviving the recomposition churn of launching another activity) and
+    // asks for the script picker. Cancelling either step aborts with nothing written.
     val scriptPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { scriptUri ->
@@ -106,11 +118,30 @@ fun HomeScreen(
     }
     val audioPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
-    ) { audioUri ->
-        if (audioUri != null) {
-            viewModel.pendingAudioUri = audioUri
+    ) { uri ->
+        if (uri != null) viewModel.onFirstPick(uri)
+    }
+    LaunchedEffect(state.needsScript) {
+        if (state.needsScript) {
+            viewModel.scriptPickerShown()
             scriptPicker.launch(SCRIPT_MIME_TYPES)
         }
+    }
+
+    // A prepared share opens the system share sheet: Quick Share, Nearby, mail, Drive…
+    val context = LocalContext.current
+    LaunchedEffect(state.pendingShare) {
+        val share = state.pendingShare ?: return@LaunchedEffect
+        viewModel.shareLaunched()
+        val send = Intent(Intent.ACTION_SEND).apply {
+            type = share.mimeType
+            putExtra(Intent.EXTRA_STREAM, share.uri)
+            putExtra(Intent.EXTRA_TITLE, share.fileName)
+            // The clip carries the read grant through the chooser to the target.
+            clipData = ClipData.newRawUri(share.fileName, share.uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(send, "Share \u201c${share.title}\u201d"))
     }
 
     LaunchedEffect(state.error) {
@@ -153,7 +184,10 @@ fun HomeScreen(
                     items(state.plays, key = { it.play.id }) { row ->
                         PlayRowItem(
                             row = row,
+                            sharing = state.sharing?.takeIf { it.playId == row.play.id }?.fraction,
+                            shareEnabled = state.sharing == null,
                             onClick = { onOpenPlay(row.play.id) },
+                            onShare = { viewModel.share(row.play.id) },
                             onDelete = { playPendingDelete = row.play }
                         )
                     }
@@ -183,7 +217,11 @@ fun HomeScreen(
 @Composable
 private fun PlayRowItem(
     row: PlayRow,
+    /** How far this row's share zip is written, while it is; null otherwise. */
+    sharing: Float?,
+    shareEnabled: Boolean,
     onClick: () -> Unit,
+    onShare: () -> Unit,
     onDelete: () -> Unit,
 ) {
     // Script-index row: playbill thumb, title, duration + rehearsed roles, and a completion
@@ -236,6 +274,27 @@ private fun PlayRowItem(
                         }
                     }
                 }
+                if (sharing != null) {
+                    // Writing the share zip: a copy of the whole recording, so show how far along.
+                    Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(
+                            progress = { sharing },
+                            modifier = Modifier.size(22.dp),
+                            strokeWidth = 2.5.dp,
+                            color = Ruby,
+                            trackColor = Hairline,
+                            gapSize = 0.dp
+                        )
+                    }
+                } else {
+                    IconButton(onClick = onShare, enabled = shareEnabled) {
+                        Icon(
+                            Icons.Outlined.Share,
+                            contentDescription = "Share play",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
                 IconButton(onClick = onDelete) {
                     Icon(
                         Icons.Outlined.Delete,
@@ -270,7 +329,7 @@ private fun EmptyState() {
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                "Tap + and pick the recording (.m4b),\nthen its script (play.json).",
+                "Tap + and pick the recording (.m4b),\nthen its script (play.json) —\nor a .zip of plays.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -287,7 +346,13 @@ private fun EmptyState() {
 private fun ImportProgressBanner(progress: PlayRepository.ImportProgress?) {
     Surface(color = SurfaceElevated) {
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp)) {
-            val label = when (progress?.phase) {
+            val phaseLabel = when (progress?.phase) {
+                PlayRepository.ImportProgress.Phase.Extracting -> when {
+                    progress.bytesRead <= 0L -> "Opening zip…"
+                    progress.totalBytes > 0 ->
+                        "Unzipping: ${formatBytes(progress.bytesRead)} / ${formatBytes(progress.totalBytes)}"
+                    else -> "Unzipping: ${formatBytes(progress.bytesRead)}"
+                }
                 PlayRepository.ImportProgress.Phase.Validating -> "Checking script…"
                 PlayRepository.ImportProgress.Phase.Copying ->
                     if (progress.totalBytes > 0)
@@ -296,10 +361,17 @@ private fun ImportProgressBanner(progress: PlayRepository.ImportProgress?) {
                 PlayRepository.ImportProgress.Phase.Finalizing -> "Finalizing…"
                 null -> "Importing…"
             }
+            // A zip with several plays says which one it is on.
+            val label = progress?.takeIf { it.playCount > 1 && it.playIndex > 0 }
+                ?.let { "Play ${it.playIndex} of ${it.playCount} · $phaseLabel" } ?: phaseLabel
             Text(label, style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.height(8.dp))
+            // Determinate once bytes flow: copying a recording, or unzipping (a cloud zip can take
+            // a while to start streaming, and a bar pinned at 0% would read as frozen).
             val fraction = progress?.takeIf {
-                it.phase == PlayRepository.ImportProgress.Phase.Copying && it.totalBytes > 0
+                (it.phase == PlayRepository.ImportProgress.Phase.Copying ||
+                    it.phase == PlayRepository.ImportProgress.Phase.Extracting) &&
+                    it.totalBytes > 0 && it.bytesRead > 0
             }?.let { it.bytesRead.toFloat() / it.totalBytes }
             if (fraction != null) {
                 StageTrack(progress = { fraction }, modifier = Modifier.fillMaxWidth())

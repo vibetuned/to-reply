@@ -1,5 +1,38 @@
 # Changelog
 
+## v1.2 — 2026-10-26
+
+Ported from ln-reader 1.7: the app runs on Android 10 and newer, a zip of plays imports in one
+go, and a play can be shared whole. The iOS app (to-reply-ios) gets the same zip import and
+sharing, and the two read each other's shares; its App Store notes are in to-reply-ios
+`metadata/listing.md`.
+
+### Play Store release notes (≤ 500 chars)
+
+```
+• Now runs on Android 10 and newer (was Android 13).
+• Import a .zip of plays: every recording comes in with the script beside it — a whole Drive folder of plays in one go.
+• Share a play with Quick Share or any app, as one file with its recording and script; 2Reply on the other phone, Android or iPhone, imports it whole.
+```
+
+### Compatibility
+- **Android 10 and newer** — the minimum drops from Android 13 (API 33) to Android 10 (API 29).
+  Nothing in the app needed Android 11–13: lint finds no newer-API call at this floor, the
+  notification-permission prompt was already skipped below Android 13, the design system's glows
+  draw with `BlurMaskFilter` (hardware-accelerated since Android 9), and the splash background
+  and themed icon simply don't apply below Android 12 and 13.
+
+### Library
+- **Import a zip** — the + button also takes a `.zip`, and every play in it is imported: each
+  `.m4b` comes in with the script beside it (same name, or the folder's `play.json`). A recording
+  without a script is reported rather than guessed, and one play failing doesn't stop the rest.
+  Streams straight from the source, so a zip still in Drive is unpacked as it downloads, and each
+  recording is moved into place rather than copied; macOS's `__MACOSX` and `._` copies are skipped.
+- **Share a play** — a Share button on each play sends it with Quick Share, Nearby or anything on
+  the share sheet, as one zip with its recording and script named after the play — the layout zip
+  import reads, so 2Reply on the other end rebuilds it whole. The zip is written uncompressed,
+  with progress on the button.
+
 ## v1.1 — 2026-10-01
 
 A new look and a voice-message script: the "Theatrical Proscenium" design system, a new icon,

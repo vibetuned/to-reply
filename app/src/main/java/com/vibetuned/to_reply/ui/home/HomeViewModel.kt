@@ -33,6 +33,27 @@ class HomeViewModel(
      */
     var pendingAudioUri: Uri? = null
 
+    /**
+     * Step one of the import picked a file. A zip imports right away — every play in it, each
+     * with its own script; a recording waits for its script, which [HomeUiState.needsScript]
+     * asks the screen to pick. Telling them apart can mean a provider round-trip, hence a
+     * coroutine rather than the picker callback.
+     */
+    fun onFirstPick(uri: Uri) {
+        viewModelScope.launch {
+            if (playRepository.isZip(uri)) {
+                importZip(uri)
+            } else {
+                pendingAudioUri = uri
+                _state.update { it.copy(needsScript = true) }
+            }
+        }
+    }
+
+    fun scriptPickerShown() {
+        _state.update { it.copy(needsScript = false) }
+    }
+
     init {
         viewModelScope.launch {
             combine(
@@ -60,6 +81,47 @@ class HomeViewModel(
                 )
             }
         }
+    }
+
+    private suspend fun importZip(uri: Uri) {
+        _state.update { it.copy(isImporting = true, importProgress = null) }
+        val result = playRepository.importZip(uri) { progress ->
+            _state.update { it.copy(importProgress = progress) }
+        }
+        _state.update {
+            it.copy(
+                isImporting = false,
+                importProgress = null,
+                // A zip can import some plays and fail others: that's a message too.
+                error = result.getOrNull()?.problem ?: result.exceptionOrNull()?.message
+            )
+        }
+    }
+
+    /**
+     * Writes [playId]'s share zip, then hands it to the screen ([HomeUiState.pendingShare]) to
+     * open the share sheet. One share at a time.
+     */
+    fun share(playId: String) {
+        if (_state.value.sharing != null) return
+        viewModelScope.launch {
+            _state.update { it.copy(sharing = SharingProgress(playId, 0f)) }
+            runCatching {
+                playRepository.prepareShare(playId) { fraction ->
+                    _state.update { it.copy(sharing = SharingProgress(playId, fraction)) }
+                }
+            }
+                .onSuccess { share -> _state.update { it.copy(sharing = null, pendingShare = share) } }
+                .onFailure { e ->
+                    _state.update {
+                        it.copy(sharing = null, error = e.message ?: "Couldn't prepare the play to share.")
+                    }
+                }
+        }
+    }
+
+    fun shareLaunched() {
+        _state.update { it.copy(pendingShare = null) }
     }
 
     fun delete(playId: String) {

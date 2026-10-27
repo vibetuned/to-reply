@@ -10,5 +10,7 @@ class ToReplyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+        // Off the main thread: an interrupted zip import can leave a whole recording behind.
+        Thread({ container.playRepository.cleanUpTemporaryFiles() }, "temp-cleanup").start()
     }
 }

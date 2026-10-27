@@ -62,9 +62,9 @@
         <a class="btn btn-ghost" href="#screenshots">See it in action →</a>
       </div>
       <div class="badge-row">
-        <span class="badge">★ Google Play · v1.1</span>
-        <span class="badge">★ App Store · v1.1</span>
-        <span class="badge badge-android">Native Android · Kotlin + Jetpack Compose · 13+</span>
+        <span class="badge">★ Google Play · v1.2</span>
+        <span class="badge">★ App Store · v1.2</span>
+        <span class="badge badge-android">Native Android · Kotlin + Jetpack Compose · 10+</span>
         <span class="badge badge-ios">Native iOS · Swift + SwiftUI · 17+</span>
         <span class="badge">100% on-device · no network at all</span>
       </div>
@@ -111,9 +111,32 @@
   <section id="whatsnew" class="alt">
     <div class="wrap">
       <div class="section-head">
-        <span class="ver-pill">v1.1 · 1 Oct 2026</span>
+        <span class="ver-pill">v1.2 · 26 Oct 2026</span>
         <h2>What's new</h2>
-        <p>A new look, and a script you can play line by line.</p>
+        <p>Plays travel now: import a whole zip of them, share one in a tap — and Android 10 phones join in.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <span class="ico">📦</span>
+          <h3>Import a zip of plays</h3>
+          <p>Pick a <strong>.zip</strong> — a Drive download of a plays folder, say — and every recording comes in with the script beside it, in one go. On iPhone it works from AirDrop and "Open in…" too. A recording without its script is reported, never guessed.</p>
+        </div>
+        <div class="card">
+          <span class="ico">📤</span>
+          <h3>Share a play</h3>
+          <p>Send a play with Quick Share, AirDrop, Messages or Mail. It travels as <strong>one file</strong> with its recording and script, and 2Reply on the other device — Android or iPhone — imports it whole.</p>
+        </div>
+        <div class="card">
+          <span class="ico">📱</span>
+          <h3>Android 10 and newer</h3>
+          <p>The Android app now runs on Android 10, 11 and 12 too — it used to need Android 13.</p>
+        </div>
+      </div>
+
+      <div class="section-head" style="margin-top:64px;">
+        <span class="ver-pill">v1.1 · 1 Oct 2026</span>
+        <h2>A new look, line by line</h2>
+        <p>A darkened-theatre design, and a script you can play line by line.</p>
       </div>
       <div class="grid">
         <div class="card">
@@ -244,6 +267,7 @@
           <ul>
             <li>A play = a fully-voiced <strong>.m4b</strong> recording + a timed <strong>play.json</strong> script.</li>
             <li>Two-step picker from any SAF source; both files are <strong>copied into private storage</strong>.</li>
+            <li>Or pick a <strong>.zip of plays</strong> — every recording with the script beside it, in one go.</li>
             <li>The script is validated first, and a duration cross-check catches mismatched pairs.</li>
           </ul>
         </div>
@@ -253,6 +277,7 @@
           <ul>
             <li>Cover art (from the m4b), duration, and listening progress per play.</li>
             <li>Shows which roles you're rehearsing; delete with confirmation.</li>
+            <li><strong>Share a play</strong> as one file, recording and script, that 2Reply on the other device imports whole.</li>
             <li>Reopens your last play — paused, where you left it — on launch.</li>
           </ul>
         </div>
@@ -322,7 +347,7 @@
           <span class="ico">📱</span>
           <h3>Requirements</h3>
           <ul>
-            <li><strong>Android</strong> 13 or newer (minSdk 33, targetSdk 36), with a file manager or cloud app exposing a <code>DocumentsProvider</code> for your files.</li>
+            <li><strong>Android</strong> 10 or newer (minSdk 29, targetSdk 36), with a file manager or cloud app exposing a <code>DocumentsProvider</code> for your files.</li>
             <li><strong>iPhone / iPad</strong> on iOS 17 or newer, with your files reachable from the Files app.</li>
             <li>A fully-voiced <strong>.m4b</strong> recording of the play and its timed <strong>play.json</strong> script.</li>
           </ul>
